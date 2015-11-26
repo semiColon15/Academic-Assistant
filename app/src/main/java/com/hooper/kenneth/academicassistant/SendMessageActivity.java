@@ -42,6 +42,8 @@ public class SendMessageActivity extends Activity {
     private String jsonResponse;
     private ProgressDialog pDialog;
 
+    public static boolean cameFromPost = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +61,6 @@ public class SendMessageActivity extends Activity {
         pDialog = new ProgressDialog(this);
         pDialog.setMessage("Please wait...");
         pDialog.setCancelable(false);
-
 
         setViewMessagesButton();
 
@@ -122,13 +123,19 @@ public class SendMessageActivity extends Activity {
 
                 String baseUrl = "http://academicassistant2.azurewebsites.net/api/Message/PostMessage/?";
                 mRequestQueue = Volley.newRequestQueue(getApplicationContext());
-                String url = baseUrl + "content=" + content + "&recipient=" + recipient + "&sender=" + sender;
+
+                                                    //TO CHECK FOR SPACES IN CONTENT
+                String url = baseUrl + "content=" + checkContentForSpaces(content) + "&recipient=" + recipient + "&sender=" + sender;
 
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
                                 Toast.makeText(getApplicationContext(), "SUCCESS", Toast.LENGTH_LONG).show();
+
+                                cameFromPost = true;
+                                Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
+                                startActivity(i);
                             }
                         }, new Response.ErrorListener() {
                     @Override
@@ -139,4 +146,24 @@ public class SendMessageActivity extends Activity {
                 mRequestQueue.add(stringRequest);
             }
 
+        public String checkContentForSpaces(String content)
+        {
+            String suitableURIString = null;
+            char[] letters = content.toCharArray();
+            for(int i = 0; i < letters.length; i++)
+            {
+                if(letters[i] == ' ')
+                {
+                    System.out.println("HERE 1");
+                    letters[i] = '%'+'2'+'0';
+                }
+                if(i == letters.length-1)
+                {
+                    System.out.println("HERE 2");
+                    suitableURIString = letters.toString();
+                }
+            }
+            System.out.println(suitableURIString);
+            return suitableURIString;
         }
+    }
