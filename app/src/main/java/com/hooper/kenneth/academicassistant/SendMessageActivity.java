@@ -150,17 +150,30 @@ public class SendMessageActivity extends Activity {
         {
             String suitableURIString = null;
             char[] letters = content.toCharArray();
+            String[] temp = new String[letters.length];
+            System.out.println("BEFORE: " + content);
             for(int i = 0; i < letters.length; i++)
             {
-                if(letters[i] == ' ')
+                temp[i] = Character.toString(letters[i]);
+            }
+            for(int i = 0; i < letters.length; i++)
+            {
+                System.out.println("AFTER: "+ (i+1) + ": " + temp[i]);
+            }
+            for(int i = 0; i < temp.length; i++)
+            {
+                if(temp[i].equalsIgnoreCase(" "))
                 {
-                    System.out.println("HERE 1");
-                    letters[i] = '%'+'2'+'0';
+                    System.out.println("BEFORE CHANGE: " + temp[i]);
+                    temp[i] = "%20";
+                    System.out.println("CHANGED: " + temp[i]);
                 }
-                if(i == letters.length-1)
+                if(i == temp.length-1)
                 {
-                    System.out.println("HERE 2");
-                    suitableURIString = letters.toString();
+                    for(int j = 0; j < temp.length; j++)
+                    {
+                        suitableURIString += temp[j];
+                    }
                 }
             }
             System.out.println(suitableURIString);

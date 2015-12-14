@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="Enter Username:"
+            android:id="@+id/usernameTextView"
+            android:gravity="center"
+            android:layout_marginTop="110dp"
+            android:layout_centerHorizontal="true" />
+
+        <EditText
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/usernameInput"
+            android:layout_below="@+id/usernameTextView"
+            android:layout_marginTop="30dp"
+            android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="Enter Password:"
+            android:id="@+id/passwordTextView"
+            android:gravity="center"
+            android:layout_below="@+id/usernameInput"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"/>
+
+        <EditText
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:id="@+id/passwordInput"
+            android:layout_below="@+id/passwordTextView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"/>
+
+        <Button
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:text="Log In"
+            android:id="@+id/LogInButton"
+            android:layout_below="@+id/passwordInput"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="43dp"
+            android:layout_marginStart="43dp"
+            android:layout_marginTop="50dp" />
+
+        <Button
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:text="Sign Up"
+            android:id="@+id/signUpButton"
+            android:layout_alignTop="@+id/LogInButton"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="53dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Academic Assistant"
+            android:id="@+id/loginHeading"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"/>
+
+    </RelativeLayout>
+</LinearLayout>
