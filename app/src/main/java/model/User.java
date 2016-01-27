@@ -1,24 +1,39 @@
 package model;
 
-public abstract class User {
+public class User {
 
-    private int userID;
-    private String username;
+    private String emailAddress;
     private String password;
+    private String confirmPassword;
     boolean adminUser;
 
-    public User(int id, String username, String password, boolean adminUser)
+    public User(String email, String password, String confirmPassword)
     {
-        this.userID = id;
-        this.username = username;
+        this.emailAddress = email;
         this.password = password;
+        this.confirmPassword = confirmPassword;
+    }
+
+    public User(String email, String password, String confirmPassword, boolean adminUser)
+    {
+        this.emailAddress = email;
+        this.password = password;
+        this.confirmPassword = confirmPassword;
         this.adminUser = adminUser;
     }
 
-    public static boolean verifyLogIn(String username, String password)
+    public String getEmail()
     {
-        //CONNECT TO WEB API HERE AND CHECK IF LOG IN IN VALID
-        //http://academicassistant2.azurewebsites.net/api/User/GetUser/?username=Gar
-        return false;
+        return emailAddress;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public String getConfirmPassword()
+    {
+        return confirmPassword;
     }
 }

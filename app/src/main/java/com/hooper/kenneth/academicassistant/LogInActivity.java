@@ -2,7 +2,9 @@ package com.hooper.kenneth.academicassistant;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,6 +22,8 @@ public class LogInActivity extends Activity {
     private EditText passwordInput;
     private Button logInButton;
     private Button signUpButton;
+
+    private Boolean loggedIn;
 
     private static LogInActivity sInstance;
     private RequestQueue mRequestQueue;
@@ -45,10 +49,40 @@ public class LogInActivity extends Activity {
         sInstance = this;
 
         mRequestQueue = Volley.newRequestQueue(this);
+
+        loggedIn = false;
+
+        if(loggedIn == true)
+        {
+            Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
+            startActivity(i);
+        }
+        else
+        {
+            verifyLogIn();
+        }
+
+
+        signUpButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
+                startActivity(i);
+            }
+        });
+
     }
 
     public void verifyLogIn()
     {
-        User.verifyLogIn(usernameInput.getText().toString(), passwordInput.getText().toString());
+        //User.verifyLogIn(usernameInput.getText().toString(), passwordInput.getText().toString());
+
+        logInButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
+                startActivity(i);
+            }
+        });
     }
+
+
 }
