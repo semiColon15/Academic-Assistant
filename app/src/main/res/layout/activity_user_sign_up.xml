@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#79CDCD">
+        android:background="@drawable/custom_background">
 
         <TextView
             android:layout_width="wrap_content"
