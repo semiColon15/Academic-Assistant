@@ -64,7 +64,7 @@ public class SignUpActivity extends Activity {
                         isAdminLevel = false;
                     }
                     User user = new User(emailAddress.getText().toString(), password.getText().toString(), confirmPassword.getText().toString(), isAdminLevel);
-                    userServiceConnectivity.registerUser(user);
+                    userServiceConnectivity.registerUserAndGetToken(user);
                     Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                     startActivity(i);
                     Toast.makeText(getApplicationContext(), "SUCCESS", Toast.LENGTH_LONG).show();
@@ -81,12 +81,14 @@ public class SignUpActivity extends Activity {
 
         boolean continu = true;
         //CHECK TO SEE IF EMAIL IS ALREADY IN USE
-        for(int i = 0; i < emailAddresses.length; i++) {
-            if (emailAddress.getText().toString().equalsIgnoreCase(emailAddresses[i])) {
-                 emailAddress.setTextColor(Color.RED);
-                 Toast.makeText(getApplicationContext(), "Email address is in use", Toast.LENGTH_LONG).show();
-                 continu = false;
-                 isValid = false;
+        if(emailAddresses != null) {
+            for (int i = 0; i < emailAddresses.length; i++) {
+                if (emailAddress.getText().toString().equalsIgnoreCase(emailAddresses[i])) {
+                    emailAddress.setTextColor(Color.RED);
+                    Toast.makeText(getApplicationContext(), "Email address is in use", Toast.LENGTH_LONG).show();
+                    continu = false;
+                    isValid = false;
+                }
             }
         }
         if(continu == true)

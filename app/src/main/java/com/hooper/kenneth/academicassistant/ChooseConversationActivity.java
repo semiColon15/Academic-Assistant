@@ -32,19 +32,13 @@ public class ChooseConversationActivity extends Activity {
 
     public void fillConvos() {
 
-        for(int i = 0; i < 24; i++)
+        for(int i = 0; i < 15; i++)
         {
             final TableRow tableRow = new TableRow(getApplicationContext());
-            tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 1000));
-            tableRow.setPadding(10, 10, 10, 10);
-            if( i%2 == 0)
-            {
-                tableRow.setBackgroundColor(Color.parseColor("#004d33"));
-            }
-            else
-            {
-                tableRow.setBackgroundColor(Color.parseColor("#001a11"));
-            }
+            tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
+            tableRow.setBackgroundResource(R.drawable.corners);
+            tableRow.setPadding(20, 20, 20, 20);
+            tableRow.setGravity(Gravity.CENTER);
 
             final TextView message = new TextView(getApplicationContext());
             message.setText("User");

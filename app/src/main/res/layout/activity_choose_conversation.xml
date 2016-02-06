@@ -2,19 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/custom_background"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin">
+    android:background="@drawable/custom_background">
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="70dp"
         android:text="Conversations"
-        android:layout_marginBottom="10dp"
         android:textStyle="bold"
-        android:background="#668B8B"
+        android:background="@drawable/convo_heading"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:textSize="25dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:gravity="center"
@@ -24,6 +21,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/heading"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
         android:id="@+id/scroll2"
         android:scrollbars="vertical"
         android:orientation="vertical">

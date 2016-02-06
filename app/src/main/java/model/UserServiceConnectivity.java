@@ -34,6 +34,8 @@ public class UserServiceConnectivity {
 
     private String[] allEmails;
 
+    private String token;
+
     public UserServiceConnectivity(Context context)
     {
         this.context = context;
@@ -56,9 +58,47 @@ public class UserServiceConnectivity {
                         try {
                             VolleyLog.v("Response:%n %s", response.toString(4));
                             Toast.makeText(context, "Added Acount", Toast.LENGTH_LONG).show();
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(context, "Account Error", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {VolleyLog.e("Error is here: ", error.getMessage());
+                    System.out.println(error.toString());
+                    Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
+                }
+            });
+
+        mRequestQueue.add(req);
+    }
+
+    public String registerUserAndGetToken(final User user)
+    {
+        final String Url2 = "http://academicassistant20151209121006.azurewebsites.net/Token";
+        final HashMap<String, String> params2 = new HashMap<String, String>();
+        params2.put("grant_type", "password");
+        params2.put("userName", user.getEmail());
+        params2.put("password", user.getPassword());
+
+        JsonObjectRequest req2 = new JsonObjectRequest(Url2, new JSONObject(params2),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String key = response.toString();
+                            token = key;
+                            System.out.println("HERE" + token);
+                            System.out.println("RESPONSE " + token);
+                            VolleyLog.v("Response:%n %s", response.toString(4));
+                            Toast.makeText(context, "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
+                            registerUser(user);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(context, "Account Registration Error", Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -69,7 +109,8 @@ public class UserServiceConnectivity {
                 Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
             }
         });
-        mRequestQueue.add(req);
+        mRequestQueue.add(req2);
+        return token;
     }
 
     public void retrieveAllUserEmailAddresses()
@@ -95,14 +136,14 @@ public class UserServiceConnectivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            //Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
