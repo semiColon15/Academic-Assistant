@@ -1,31 +1,40 @@
 package model;
 
-import android.net.sip.SipAudioCall;
-
-import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.ParseError;
 import com.android.volley.Response;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
 
 public class CustomJsonObjectRequest extends JsonObjectRequest
 {
-    private String token;
-
-    public CustomJsonObjectRequest(String url, JSONObject jsonRequest,Response.Listener listener, Response.ErrorListener errorListener, String token)
+    public CustomJsonObjectRequest(String url, JSONObject jsonRequest,Response.Listener listener, Response.ErrorListener errorListener)
     {
         super(url, jsonRequest, listener, errorListener);
-        this.token = token;
     }
 
-    @Override
-    public Map getHeaders() throws AuthFailureError {
-        Map headers = new HashMap();
-        headers.put("Authorization", "bearer " + token);
-        return headers;
+    protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+        try {
+            String jsonString = new String(response.data,
+                    HttpHeaderParser.parseCharset(response.headers, PROTOCOL_CHARSET));
+
+            JSONObject result = null;
+
+            if (jsonString != null && jsonString.length() > 0)
+                result = new JSONObject(jsonString);
+
+            return Response.success(result,
+                    HttpHeaderParser.parseCacheHeaders(response));
+        } catch (UnsupportedEncodingException e) {
+            return Response.error(new ParseError(e));
+        } catch (JSONException je) {
+            return Response.error(new ParseError(je));
+        }
     }
 
 }

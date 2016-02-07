@@ -22,10 +22,7 @@ public class User {
         this.adminUser = adminUser;
     }
 
-    public String getEmail()
-    {
-        return emailAddress;
-    }
+    public String getEmail() { return emailAddress; }
 
     public String getPassword()
     {
@@ -36,4 +33,6 @@ public class User {
     {
         return confirmPassword;
     }
+
+    public boolean getAdminUser() { return adminUser; }
 }

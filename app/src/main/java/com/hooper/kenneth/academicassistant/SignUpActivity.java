@@ -64,10 +64,13 @@ public class SignUpActivity extends Activity {
                         isAdminLevel = false;
                     }
                     User user = new User(emailAddress.getText().toString(), password.getText().toString(), confirmPassword.getText().toString(), isAdminLevel);
-                    userServiceConnectivity.registerUserAndGetToken(user);
+                    userServiceConnectivity.registerUserWithService(user);
+                    //CHECK USER IS REGISTERED BEFORE PROCEEDING
+                    //MAKE THIS PAGE NOT GONE SO THAT YOU CANNOT PRESS BACK AND GO HERE AGAIN
                     Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                     startActivity(i);
-                    Toast.makeText(getApplicationContext(), "SUCCESS", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Passed Checks", Toast.LENGTH_LONG).show();
+                    finish();
                 }
                 else
                     Toast.makeText(getApplicationContext(), "FAILED", Toast.LENGTH_LONG).show();
@@ -78,8 +81,15 @@ public class SignUpActivity extends Activity {
     public boolean performLocalChecks()
     {
         boolean isValid = true;
-
         boolean continu = true;
+
+        //CHECK THAT FIELDS ARE NOT BLANK
+        if(emailAddress.getText().toString().equalsIgnoreCase(""))
+        {
+            Toast.makeText(getApplicationContext(), "You must enter an address", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
         //CHECK TO SEE IF EMAIL IS ALREADY IN USE
         if(emailAddresses != null) {
             for (int i = 0; i < emailAddresses.length; i++) {
@@ -90,6 +100,7 @@ public class SignUpActivity extends Activity {
                     isValid = false;
                 }
             }
+            System.out.println("HERE 1");
         }
         if(continu == true)
         {
@@ -98,6 +109,8 @@ public class SignUpActivity extends Activity {
                 isValid = false;
                 confirmPassword.setTextColor(Color.RED);
                 Toast.makeText(getApplicationContext(), "Passwords do not match", Toast.LENGTH_LONG).show();
+                System.out.println("HERE 3");
+
             }
             else if(passwordMeetsRequirements() == false)
             {
@@ -106,6 +119,7 @@ public class SignUpActivity extends Activity {
                 confirmPassword.setTextColor(Color.RED);
                 Toast.makeText(getApplicationContext(), "Password does not meet requirements." +
                         "Must be 6 long and contain 1 uppercase, 1 digit and 1 non-digit/letter.", Toast.LENGTH_LONG).show();
+                System.out.println("HERE 4");
             }
         }
         return isValid;
