@@ -28,13 +28,7 @@ public class LogInActivity extends Activity {
     private Button logInButton;
     private Button signUpButton;
 
-    private Boolean loggedIn;
-
     private static LogInActivity sInstance;
-    private RequestQueue mRequestQueue;
-    private String jsonResponse;
-    private ProgressDialog pDialog;
-
     private String[] emails;
     private String[] passwords;
 
@@ -58,29 +52,25 @@ public class LogInActivity extends Activity {
 
         sInstance = this;
 
-        mRequestQueue = Volley.newRequestQueue(this);
-
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext());
 
-        emails = userServiceConnectivity.getAllEmailAddresses();
-        passwords = userServiceConnectivity.getAllPasswords();
 
-        //System.out.println(emails);
 
         //TODO CHECK IF the user is logged in. Redirect if already logged in.
 
 
-        signUpButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
 
-                Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
 
         logInButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                emails = userServiceConnectivity.getAllEmailAddresses();
+                passwords = userServiceConnectivity.getAllPasswords();
+
+                for(int i = 0; i < emails.length; i++) {
+                    System.out.println("HOOEY: " + emails[i]);
+                    System.out.println("jndons: " + passwords[i]);
+                }
                 boolean g = false;
                 for(int i = 0; i < passwords.length; i++) {
                     if (usernameInput.getText().toString().equals(emails[i]) && passwordInput.getText().toString().equals(passwords[i])) {
@@ -91,11 +81,23 @@ public class LogInActivity extends Activity {
                 {
                     Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                     startActivity(t);
+                    //TODO obtain a token and store it.
+                    //TODO When logOut is done. Get rid of token. Check every time app starts that token is still vaild. If not, try get another one. If that fails then open log in page.
+                    finish();
                 }
                 else
                 {
                     Toast.makeText(getApplicationContext(), "ERROR", Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        signUpButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
+                startActivity(i);
+                finish();
             }
         });
     }

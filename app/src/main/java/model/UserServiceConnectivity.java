@@ -239,6 +239,7 @@ public class UserServiceConnectivity {
                                 JSONObject passwords = (JSONObject) response.get(i);
 
                                 allPasswords[i] = passwords.getString("Password");
+                                System.out.println("UP:  " + allPasswords[i]);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
