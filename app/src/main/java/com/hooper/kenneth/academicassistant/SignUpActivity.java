@@ -1,8 +1,11 @@
 package com.hooper.kenneth.academicassistant;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -55,7 +58,7 @@ public class SignUpActivity extends Activity {
         signUp.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 emailAddresses = userServiceConnectivity.getAllEmailAddresses();
-                if(performLocalChecks() == true) {
+                if(performLocalChecks()) {
                     boolean isAdminLevel;
                     if(admin.isChecked()) {
                         isAdminLevel = true;
@@ -64,13 +67,21 @@ public class SignUpActivity extends Activity {
                         isAdminLevel = false;
                     }
                     User user = new User(emailAddress.getText().toString(), password.getText().toString(), confirmPassword.getText().toString(), isAdminLevel);
-                    userServiceConnectivity.registerUserWithService(user);
-                    //CHECK USER IS REGISTERED BEFORE PROCEEDING
-                    //MAKE THIS PAGE NOT GONE SO THAT YOU CANNOT PRESS BACK AND GO HERE AGAIN
-                    Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
-                    startActivity(i);
-                    Toast.makeText(getApplicationContext(), "Passed Checks", Toast.LENGTH_LONG).show();
-                    finish();
+
+                    //TODO CHECK USER IS REGISTERED BEFORE PROCEEDING    I.E. THAT INTERNET CONNECTION EXISTS
+
+                    final ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                    final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+                    if (activeNetwork != null && activeNetwork.isConnected()) {
+                        userServiceConnectivity.registerUserWithService(user);
+                        Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
+                        startActivity(i);
+                        Toast.makeText(getApplicationContext(), "Passed Checks", Toast.LENGTH_LONG).show();
+                        finish();
+                    } else {
+                        // notify user you are not online
+                        Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_LONG).show();
+                    }
                 }
                 else
                     Toast.makeText(getApplicationContext(), "FAILED", Toast.LENGTH_LONG).show();
@@ -102,7 +113,7 @@ public class SignUpActivity extends Activity {
             }
             System.out.println("HERE 1");
         }
-        if(continu == true)
+        if(continu)
         {
             if(!password.getText().toString().equalsIgnoreCase(confirmPassword.getText().toString()))
             {
@@ -112,7 +123,7 @@ public class SignUpActivity extends Activity {
                 System.out.println("HERE 3");
 
             }
-            else if(passwordMeetsRequirements() == false)
+            else if(!passwordMeetsRequirements())
             {
                 isValid = false;
                 password.setTextColor(Color.RED);
@@ -148,13 +159,6 @@ public class SignUpActivity extends Activity {
                 containsNonLetterOrDigit = true;
             }
         }
-        if (containsNonLetterOrDigit == true && containsNum == true && containsUpper == true)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (containsNonLetterOrDigit && containsNum && containsUpper);
     }
 }

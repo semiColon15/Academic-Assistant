@@ -18,6 +18,8 @@ public class ChooseConversationActivity extends Activity {
     private TableLayout tableLayout;
     private List<TableRow> rows;
 
+    private String[] tempNames = { "Joe Smith", "College Group", "Leanne Quinn", "John Keogh", "Neil Patrick Harris", "Frank Sinatra", "Paul O'Reilly", "Alan Brogan", "Michael McDonnell", "Pete Sampras"};
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation);
@@ -32,7 +34,7 @@ public class ChooseConversationActivity extends Activity {
 
     public void fillConvos() {
 
-        for(int i = 0; i < 15; i++)
+        for(int i = 0; i < 10; i++)
         {
             final TableRow tableRow = new TableRow(getApplicationContext());
             tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
@@ -41,7 +43,7 @@ public class ChooseConversationActivity extends Activity {
             tableRow.setGravity(Gravity.CENTER);
 
             final TextView message = new TextView(getApplicationContext());
-            message.setText("User");
+            message.setText(tempNames[i]);
             message.setTextAppearance(getApplicationContext(), R.style.chat);
             tableRow.setClickable(true);
 

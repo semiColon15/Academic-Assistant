@@ -1,36 +1,29 @@
 package model;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.NetworkResponse;
-import com.android.volley.ParseError;
-import com.android.volley.Request;
+import com.android.volley.AuthFailureError;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.hooper.kenneth.academicassistant.SignUpActivity;
-import com.hooper.kenneth.academicassistant.ViewMessagesActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class UserServiceConnectivity {
 
-    private ProgressDialog pDialog;
+    //private ProgressDialog pDialog;
     private Context context;
     private RequestQueue mRequestQueue;
 
@@ -38,6 +31,7 @@ public class UserServiceConnectivity {
     private static String TAG = SignUpActivity.class.getSimpleName();
 
     private String[] allEmails;
+    private String[] allPasswords;
 
     private String token;
 
@@ -46,6 +40,7 @@ public class UserServiceConnectivity {
         this.context = context;
         mRequestQueue = Volley.newRequestQueue(context);
         retrieveAllUserEmailAddresses();
+        retrieveAllPasswords();
     }
 
     public void registerUserWithService(final User user)
@@ -97,10 +92,10 @@ public class UserServiceConnectivity {
         mRequestQueue.add(req);
     }
 
-    public void registerUser(User user)
+    public void registerUser(final User user)
     {
         String url = baseUrl + "Users/PostUser/?";
-        HashMap<String, String> params = new HashMap<String, String>();
+        HashMap<String, String> params = new HashMap<>();
         params.put("Email", user.getEmail());
         params.put("Password", user.getPassword());
         params.put("Admin", String.valueOf(user.getAdminUser()));
@@ -114,6 +109,7 @@ public class UserServiceConnectivity {
                             VolleyLog.v("Response:%n %s", response.toString(4));
                             Toast.makeText(context, "Added Acount to users", Toast.LENGTH_LONG).show();
                             System.out.println("Loop 5: ");
+                            getToken(user);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -133,26 +129,23 @@ public class UserServiceConnectivity {
         mRequestQueue.add(req);
     }
 
-    public String getToken(final User user)
+    public void getToken(final User user)
     {
-        final String Url2 = "http://academicassistant20151209121006.azurewebsites.net/Token";
-        final HashMap<String, String> params2 = new HashMap<String, String>();
-        params2.put("grant_type", "password");
-        params2.put("userName", user.getEmail());
-        params2.put("password", user.getPassword());
+        final String Url2 = "https://academicassistant20151209121006.azurewebsites.net/Token";
 
-        JsonObjectRequest req2 = new JsonObjectRequest(Url2, new JSONObject(params2),
-                new Response.Listener<JSONObject>() {
+        CustomBodyStringRequest req2 = new CustomBodyStringRequest(Url2,
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
                         try {
-                            String key = response.toString();
-                            token = key;
-                            System.out.println("RESPONSE " + token);
-                            VolleyLog.v("Response:%n %s", response.toString(4));
+                            JSONObject jsonResponse = new JSONObject(response);
+                            token = jsonResponse.getString("access_token");
+                            System.out.println("TOKEN: " + token);
+
+                            VolleyLog.v("Response:%n %s", response);
                             Toast.makeText(context, "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
 
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(context, "Account Registration Error", Toast.LENGTH_LONG).show();
                         }
@@ -164,9 +157,23 @@ public class UserServiceConnectivity {
                 System.out.println(error.toString());
                 Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
             }
-        });
+        })
+        {
+            @Override
+            public String getBodyContentType() {
+                return "application/x-www-form-urlencoded; charset=UTF-8";
+            }
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> pars = new HashMap<>();
+                pars.put("grant_type", "password");
+                pars.put("userName", user.getEmail());
+                pars.put("password", user.getPassword());
+                return pars;
+            }
+    };
+
         mRequestQueue.add(req2);
-        return token;
     }
 
     public void retrieveAllUserEmailAddresses()
@@ -192,14 +199,14 @@ public class UserServiceConnectivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            //Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -210,5 +217,53 @@ public class UserServiceConnectivity {
     public String[] getAllEmailAddresses()
     {
         return allEmails;
+    }
+
+    public void retrieveAllPasswords()
+    {
+        String url = "Users/GetUsers";
+        String Url = baseUrl + url;
+
+        JsonArrayRequest req = new JsonArrayRequest(Url,
+                new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Log.d(TAG, response.toString());
+
+                        try {
+
+                            allPasswords = new String[response.length()];
+                            for (int i = 0; i < response.length(); i++) {
+
+                                JSONObject passwords = (JSONObject) response.get(i);
+
+                                allPasswords[i] = passwords.getString("Password");
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Adding request to request queue
+        mRequestQueue.add(req);
+    }
+
+    public String[] getAllPasswords()
+    {
+        return allPasswords;
+    }
+
+    public void logIn()
+    {
+
     }
 }
