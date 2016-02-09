@@ -84,7 +84,7 @@ public class LogInActivity extends Activity {
                     //TODO obtain a token and store it.
                     //TODO When logOut is done. Get rid of token. Check every time app starts that token is still vaild. If not, try get another one. If that fails then open log in page.
                     finish();
-                }
+                } 
                 else
                 {
                     Toast.makeText(getApplicationContext(), "ERROR", Toast.LENGTH_LONG).show();
