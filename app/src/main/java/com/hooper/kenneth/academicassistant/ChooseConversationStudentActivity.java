@@ -1,8 +1,8 @@
 package com.hooper.kenneth.academicassistant;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -13,25 +13,26 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChooseConversationActivity extends Activity {
+import model.Conversation;
+
+public class ChooseConversationStudentActivity extends AppCompatActivity {
 
     private TableLayout tableLayout;
     private List<TableRow> rows;
     private Button logOut;
+    private ArrayList<Conversation> convos;
 
     private String[] tempNames = { "Joe Smith", "College Group", "Leanne Quinn", "John Keogh", "Neil Patrick Harris", "Frank Sinatra", "Paul O'Reilly", "Alan Brogan", "Michael McDonnell", "Pete Sampras"};
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_choose_conversation);
+        setContentView(R.layout.activity_choose_conversation_student);
 
-        tableLayout = (TableLayout) findViewById(R.id.convos);
+        tableLayout = (TableLayout) findViewById(R.id.convos_stu);
         tableLayout.setVerticalScrollBarEnabled(true);
-        logOut = (Button) findViewById(R.id.logout);
+        logOut = (Button) findViewById(R.id.logout_stu);
 
         rows = new ArrayList<TableRow>();
-
-        //LogInActivity.token = LogInActivity.retrieveToken();
 
         logOut.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

@@ -1,15 +1,13 @@
 package com.hooper.kenneth.academicassistant;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.android.volley.toolbox.RequestFuture;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,30 +15,28 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
+import model.ConversationServiceConnectivity;
 import model.User;
 import model.UserServiceConnectivity;
 
-public class LogInActivity extends Activity {
+public class LogInActivity extends AppCompatActivity {
 
     private EditText usernameInput;
     private EditText passwordInput;
     private Button logInButton;
     private Button signUpButton;
 
-    private static LogInActivity sInstance;
     private String[] emails;
     private String[] passwords;
-    private boolean admin;
 
     public static String token;
+    public static String password;
 
     static String loggedInUser;
-    static String loggedInUserType;
+    static boolean loggedInUserType;
     private boolean loggedIn;
+    static ConversationServiceConnectivity c;
 
     private UserServiceConnectivity userServiceConnectivity;
 
@@ -54,15 +50,18 @@ public class LogInActivity extends Activity {
         logInButton = (Button) findViewById(R.id.LogInButton);
         signUpButton = (Button) findViewById(R.id.signUpButton);
 
-        sInstance = this;
-
+        c = new ConversationServiceConnectivity(getApplicationContext());
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext());
 
         //Check if already logged in.
         token = retrieveToken();
+        password = retrievePassword();
+        loggedInUser = retrieveLoggedInUser();
+        loggedInUserType = retrieveLoggedInUserType();
         System.out.println("LogInActivity::: Initial Log In: " + token);
+        System.out.println("INITIAL TYPE: " + loggedInUserType);
 
-        if (token.equals("") || token == null){
+        if (token.equals("") || token == null) {
             loggedIn = false;
         }
         else {
@@ -71,11 +70,21 @@ public class LogInActivity extends Activity {
 
         if (loggedIn)
         {
-            Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
-            startActivity(t);
-            loggedInUser = retrieveLoggedInUser();
-            System.out.println("USER: " + loggedInUser);
-            finish();
+            if(loggedInUserType) {
+                Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                startActivity(t);
+                System.out.println("USER: " + loggedInUser);
+                System.out.println("ADMIN: " + loggedInUserType);
+                finish();
+            }
+            else
+            {
+                Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                startActivity(t);
+                System.out.println("USER: " + loggedInUser);
+                System.out.println("ADMIN: " + loggedInUserType);
+                finish();
+            }
         }
 
 
@@ -84,30 +93,36 @@ public class LogInActivity extends Activity {
 
                 emails = userServiceConnectivity.getAllEmailAddresses();
                 passwords = userServiceConnectivity.getAllPasswords();
-                userServiceConnectivity.checkUserAdminLevel(usernameInput
-                        .getText().toString());
-                admin = userServiceConnectivity.getAdminLevel();
+                userServiceConnectivity.checkUserAdminLevel(usernameInput.getText().toString());
 
                 boolean g = false;
                 if(passwords != null) {
                     for (int i = 0; i < passwords.length; i++) {
                         if (usernameInput.getText().toString().trim().equals(emails[i]) && passwordInput.getText().toString().equals(passwords[i])) {
                             g = true;
+                            loggedInUser = usernameInput.getText().toString();
                         }
                     }
                     if (g) {
                         //TODO CHECK CURRENT TOKEN IS STILL VALID
-                        Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
+                        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                         startActivity(t);
-                        User user = new User(usernameInput.getText().toString(), passwordInput.getText().toString(), passwordInput.getText().toString(), admin);
+                        User user = new User(usernameInput.getText().toString(), passwordInput.getText().toString(), passwordInput.getText().toString(), loggedInUserType);
 
                         userServiceConnectivity.getToken(user);
 
                         token = userServiceConnectivity.getToken();
+                        password = passwordInput.getText().toString();
+                        //loggedInUser = usernameInput.getText().toString();
+                        loggedInUserType = userServiceConnectivity.getAdminLevel();
 
                         System.out.println("AAAAAAAAAAAAAAA " + token);
+                        System.out.println("Logged IN USer: " + loggedInUser);
+                        System.out.println("ADMIN TYPE IODFINDIND: " + loggedInUserType);
                         saveToken("token.txt", token, getApplicationContext());
-                        saveLoggedInUser("loggedInUser.txt", usernameInput.getText().toString(), getApplicationContext());
+                        savePassword("password.txt", password, getApplicationContext());
+                        saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
+                        saveLoggedInUserType("loggedInUserType.txt", loggedInUserType, getApplicationContext());
                         System.out.println("SAVED USER: " + retrieveLoggedInUser());
                         finish();
                     } else {
@@ -140,7 +155,7 @@ public class LogInActivity extends Activity {
                 token += p[i];
             }
 
-            System.out.println("SOSN: " + token);
+            System.out.println("SOSN TOKEN: " + token);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -160,6 +175,41 @@ public class LogInActivity extends Activity {
         }
     }
 
+
+    public String retrievePassword()
+    {
+        String pword = "";
+        try {
+            File myDir = new File(getFilesDir().getAbsolutePath());
+            BufferedReader br = new BufferedReader(new FileReader(myDir + "/password.txt"));
+            String s = br.readLine();
+            char[] p = s.toCharArray();
+            for(int i = 7; i < s.length(); i++)
+            {
+                pword += p[i];
+            }
+
+            System.out.println("SOSN TOKEN: " + pword);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return pword;
+    }
+
+    public static void savePassword(String filename, String pword, Context ctx) {
+        FileOutputStream fos;
+        try {
+            fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(pword);
+            oos.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+
     public String retrieveLoggedInUser()
     {
         String user = "";
@@ -167,13 +217,16 @@ public class LogInActivity extends Activity {
             File myDir = new File(getFilesDir().getAbsolutePath());
             BufferedReader br = new BufferedReader(new FileReader(myDir + "/loggedInUser.txt"));
             String s = br.readLine();
+            System.out.println("IN GETTING METHOD::::::::: " + s);
             char[] p = s.toCharArray();
             for(int i = 7; i < s.length(); i++)
             {
                 user += p[i];
+                System.out.println("TRANSFERRING::::::: " + user);
             }
 
-            System.out.println("SOSN: " + user);
+            System.out.println("SOSN USER: " + user);
+            System.out.println("ORIGINAL:::::: " + s);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -193,5 +246,46 @@ public class LogInActivity extends Activity {
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public boolean retrieveLoggedInUserType()
+    {
+        String type = "";
+        try {
+            File myDir = new File(getFilesDir().getAbsolutePath());
+            BufferedReader br = new BufferedReader(new FileReader(myDir + "/loggedInUserType.txt"));
+            String s = br.readLine();
+            char[] p = s.toCharArray();
+            for(int i = 7; i < s.length(); i++)
+            {
+                type += p[i];
+            }
+
+            System.out.println("SOSN TYPE: " + type);
+            System.out.println("SOSN TYPE 2: " + Boolean.valueOf(type));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Boolean.valueOf(type);
+    }
+
+    public static void saveLoggedInUserType(String filename, boolean type, Context ctx)
+    {
+        String type2 = String.valueOf(type);
+        FileOutputStream fos;
+        try {
+            fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(type2);
+            oos.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public static ConversationServiceConnectivity getConversationServiceConnectivity()
+    {
+        return c;
     }
 }

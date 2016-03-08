@@ -1,11 +1,15 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
     private String emailAddress;
     private String password;
     private String confirmPassword;
     boolean adminUser;
+    private List<Conversation> conversations;
 
     public User(String email, String password, String confirmPassword)
     {
@@ -22,6 +26,14 @@ public class User {
         this.adminUser = adminUser;
     }
 
+    public User(String email, String password, boolean adminUser, ArrayList<Conversation> convos)
+    {
+        this.emailAddress = email;
+        this.password = password;
+        this.adminUser = adminUser;
+        this.conversations = convos;
+    }
+
     public String getEmail() { return emailAddress; }
 
     public String getPassword()
@@ -35,4 +47,6 @@ public class User {
     }
 
     public boolean getAdminUser() { return adminUser; }
+
+    public List<Conversation> getConversations() { return conversations; }
 }

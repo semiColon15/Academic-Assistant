@@ -1,12 +1,12 @@
 package com.hooper.kenneth.academicassistant;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -17,7 +17,7 @@ import android.widget.Toast;
 import model.User;
 import model.UserServiceConnectivity;
 
-public class SignUpActivity extends Activity {
+public class SignUpActivity extends AppCompatActivity {
 
     private EditText emailAddress;
     private EditText password;
@@ -74,7 +74,7 @@ public class SignUpActivity extends Activity {
                     final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
                     if (activeNetwork != null && activeNetwork.isConnected()) {
                         userServiceConnectivity.registerUserWithService(user);
-                        Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
+                        Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                         startActivity(i);
                         Toast.makeText(getApplicationContext(), "Passed Checks", Toast.LENGTH_LONG).show();
                         finish();

@@ -1,6 +1,5 @@
 package model;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,7 +12,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.Volley;
 import com.hooper.kenneth.academicassistant.LogInActivity;
 import com.hooper.kenneth.academicassistant.SignUpActivity;
@@ -22,21 +20,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UserServiceConnectivity {
 
-    private ProgressDialog pDialog;
     private Context context;
     private RequestQueue mRequestQueue;
 
-    String baseUrl = "https://academicassistant20151209121006.azurewebsites.net/api/";
+    String baseUrl = "http://academicassistantservice.azurewebsites.net/api/";
     private static String TAG = SignUpActivity.class.getSimpleName();
 
     private String[] allEmails;
@@ -51,7 +43,6 @@ public class UserServiceConnectivity {
         mRequestQueue = Volley.newRequestQueue(context);
         retrieveAllUserEmailAddresses();
         retrieveAllPasswords();
-        //pDialog = new ProgressDialog(context);
     }
 
     public void registerUserWithService(final User user)
@@ -107,7 +98,8 @@ public class UserServiceConnectivity {
                         try {
                             VolleyLog.v("Response:%n %s", response.toString(4));
                             Toast.makeText(context, "Added Acount to users", Toast.LENGTH_LONG).show();
-                            //getToken(user);
+
+                            getToken(user);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -127,9 +119,8 @@ public class UserServiceConnectivity {
 
     public void getToken(final User user)
     {
-        final String Url2 = "https://academicassistant20151209121006.azurewebsites.net/Token";
+        final String Url2 = "http://academicassistantservice.azurewebsites.net/token";
 
-        //showpDialog();
         CustomBodyStringRequest req2 = new CustomBodyStringRequest(Url2,
                 new Response.Listener<String>() {
                     @Override
@@ -138,7 +129,7 @@ public class UserServiceConnectivity {
                             JSONObject jsonResponse = new JSONObject(response);
                             token = jsonResponse.getString("access_token");
 
-                            save("token.txt", token, context);
+                            LogInActivity.saveToken("token.txt", token, context);
 
                             VolleyLog.v("Response:%n %s", response);
                             Toast.makeText(context, "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
@@ -173,21 +164,6 @@ public class UserServiceConnectivity {
         //hidepDialog();
 
         mRequestQueue.add(req2);
-    }
-
-    public static void save(String filename, String token,
-                            Context ctx) {
-        FileOutputStream fos;
-        try {
-            fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(token);
-            oos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }catch(IOException e){
-            e.printStackTrace();
-        }
     }
 
     public void retrieveAllUserEmailAddresses()
@@ -287,9 +263,14 @@ public class UserServiceConnectivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            String r = response.getString("Admin");
+                            String adminLevel_ = response.getString("Admin");
+                            LogInActivity.saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), context);
+                            System.out.println("ADMIN T/F: " + adminLevel_);
+                            adminLevel =  Boolean.valueOf(adminLevel_);
                         }
-                        catch(JSONException e){}
+                        catch(JSONException e){
+                            System.out.println(e.toString());
+                        }
                     }
                 }, new Response.ErrorListener() {
 
@@ -315,13 +296,4 @@ public class UserServiceConnectivity {
         return token;
     }
 
-    private void showpDialog() {
-        if (!pDialog.isShowing())
-            pDialog.show();
-    }
-
-    private void hidepDialog() {
-        if (pDialog.isShowing())
-            pDialog.dismiss();
-    }
 }
