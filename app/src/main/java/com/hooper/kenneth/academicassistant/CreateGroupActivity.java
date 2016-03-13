@@ -1,24 +1,15 @@
 package com.hooper.kenneth.academicassistant;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Random;
 
 import model.ConversationServiceConnectivity;
@@ -45,7 +36,6 @@ public class CreateGroupActivity extends AppCompatActivity {
         createGroup.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                //((ViewManager)createGroup.getParent()).removeView(createGroup);
                 if (createGroup.getText().toString().equalsIgnoreCase("Create Group")) {
                     String key = generateKey();
                     String gName = groupName.getText().toString();
@@ -59,7 +49,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                     convo.CreateConversation(key, gName, LogInActivity.loggedInUser);
                 } else if (createGroup.getText().toString().equalsIgnoreCase("OK")) {
                     //DISPLAY NEXT SCREEN
-                    convo.AddUserIntoConversation(groupKey, LogInActivity.loggedInUser, LogInActivity.password , String.valueOf(LogInActivity.loggedInUserType));
+                    convo.AddUserIntoConversation(groupKey, LogInActivity.loggedInUser, LogInActivity.password, String.valueOf(LogInActivity.loggedInUserType));
                     Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                     startActivity(t);
                     finish();
@@ -74,7 +64,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         String[] allIds = convo.retrieveAllConversationKeys();
         String[] chars = new String[6];
         Random rand = new Random();
-        String output = new String();
+        String output = "";
         boolean goAgain = true;
 
         while(goAgain) {

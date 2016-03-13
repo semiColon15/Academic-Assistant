@@ -50,7 +50,7 @@ public class LogInActivity extends AppCompatActivity {
         logInButton = (Button) findViewById(R.id.LogInButton);
         signUpButton = (Button) findViewById(R.id.signUpButton);
 
-        c = new ConversationServiceConnectivity(getApplicationContext());
+        //c = new ConversationServiceConnectivity(getApplicationContext());
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext());
 
         //Check if already logged in.
