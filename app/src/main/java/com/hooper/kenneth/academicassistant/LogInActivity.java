@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -23,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 
 import model.ServerCallback;
 import model.User;
@@ -42,9 +47,9 @@ public class LogInActivity extends AppCompatActivity {
     public static String loggedInUser;
     public static boolean loggedInUserType;
 
-    private UserServiceConnectivity userServiceConnectivity;
+    private Toolbar toolbar;
 
-    private ProgressDialog pDialog;
+    private UserServiceConnectivity userServiceConnectivity;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +61,13 @@ public class LogInActivity extends AppCompatActivity {
         Button logInButton = (Button) findViewById(R.id.LogInButton);
         Button signUpButton = (Button) findViewById(R.id.signUpButton);
 
-        pDialog = new ProgressDialog(this);
+        ProgressDialog pDialog = new ProgressDialog(this);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        TextView c = getActionBarTextView();
+        System.out.println("^^^^^^^^^^ " + c.getText().toString());
 
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext(), pDialog);
 
@@ -65,8 +76,6 @@ public class LogInActivity extends AppCompatActivity {
         password = retrievePassword();
         loggedInUser = retrieveLoggedInUser();
         loggedInUserType = retrieveLoggedInUserType();
-        //System.out.println("LogInActivity::: Initial Log In: " + token);
-        //System.out.println("INITIAL TYPE: " + loggedInUserType);
 
         boolean loggedIn;
 
@@ -82,16 +91,12 @@ public class LogInActivity extends AppCompatActivity {
             if(loggedInUserType) {
                 Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                 startActivity(t);
-                //System.out.println("USER: " + loggedInUser);
-               // System.out.println("ADMIN: " + loggedInUserType);
                 finish();
             }
             else
             {
                 Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
                 startActivity(t);
-                //System.out.println("USER: " + loggedInUser);
-                //System.out.println("ADMIN: " + loggedInUserType);
                 finish();
             }
         }
@@ -188,18 +193,12 @@ public class LogInActivity extends AppCompatActivity {
                                         try {
                                             String adminLevel_ = result.getString("Admin");
 
-                                    /*System.out.println("AAAAAAAAAAAAAAA " + token);
-                                    System.out.println("Logged IN USer: " + loggedInUser);
-                                    System.out.println("ADMIN TYPE IODFINDIND: " + loggedInUserType);*/
-
                                             saveToken("token.txt", token, getApplicationContext());
                                             savePassword("password.txt", password, getApplicationContext());
                                             saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
                                             saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
 
-                                            //System.out.println("SAVED USER: " + retrieveLoggedInUser());
-
-                                            if(Boolean.valueOf(adminLevel_)==true) {
+                                            if(Boolean.valueOf(adminLevel_)) {
                                                 Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                                                 startActivity(t);
                                                 finish();
@@ -258,6 +257,13 @@ public class LogInActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
     public String retrieveToken()
     {
         String token = "";
@@ -288,6 +294,18 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
+    private TextView getActionBarTextView() {
+        TextView titleTextView = null;
+
+        try {
+            Field f = toolbar.getClass().getDeclaredField("mTitleTextView");
+            f.setAccessible(true);
+            titleTextView = (TextView) f.get(toolbar);
+        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException e) {
+        }
+        return titleTextView;
+    }
 
     public String retrievePassword()
     {
