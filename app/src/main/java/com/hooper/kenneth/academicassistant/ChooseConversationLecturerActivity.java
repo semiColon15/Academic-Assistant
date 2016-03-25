@@ -1,10 +1,10 @@
 package com.hooper.kenneth.academicassistant;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -13,11 +13,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,40 +26,35 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import model.Conversation;
 import model.ConversationServiceConnectivity;
 import model.Message;
 import model.ServerCallback;
 import model.User;
-import model.VolleyResponseListener;
 
 public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
+
     private TableLayout tableLayout;
-    private List<TableRow> rows;
-    private Button logOut;
-    private Button addGroup;
     private ConversationServiceConnectivity c;
     public static String chosenConvoKey;
-
+    private ProgressDialog pDialog;
     private ArrayList<Conversation> conversations;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_lecturer);
-        c = new ConversationServiceConnectivity(getApplicationContext());
+        pDialog =  new ProgressDialog(this);
+        c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
         chosenConvoKey = "";
 
         tableLayout = (TableLayout) findViewById(R.id.convos);
         tableLayout.setVerticalScrollBarEnabled(true);
-        logOut = (Button) findViewById(R.id.logout);
-        addGroup = (Button) findViewById(R.id.addGroup);
-        rows = new ArrayList<TableRow>();
+        Button logOut = (Button) findViewById(R.id.logout);
+        Button addGroup = (Button) findViewById(R.id.addGroup);
+        Button joinGroup = (Button) findViewById(R.id.joinGroup);
 
         logOut.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -84,19 +75,26 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             }
         });
 
+        joinGroup.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+
         fillConvos();
     }
 
-    //TODO Change method to take make request to service to search for conversations for a specific user, not all conversations.
-    //Write method in service to accept one string parameter "email" the  LINQ query to get conversations for that user
     public void fillConvos() {
-
         c.getExistingConversations(new ServerCallback() {
+
                                        @Override
                                        public void onSuccess(JSONArray response) {
-                                            conversations = new ArrayList<>();
-                                           try
-                                           {
+
+                                           conversations = new ArrayList<>();
+                                           final ArrayList<Conversation> convos = new ArrayList<Conversation>();
+                                           try {
                                                for (int i = 0; i < response.length(); i++) {
 
                                                    JSONObject res = (JSONObject) response.get(i);
@@ -112,14 +110,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                    administrator = res.getString("Administrator");
 
                                                    JSONArray users = res.getJSONArray("Users");
-                                                   if(users != null) {
+                                                   if (users != null) {
                                                        for (int j = 0; j < users.length(); j++) {
                                                            JSONObject users2 = (JSONObject) users.get(j);
 
                                                            String email;
                                                            String password;
                                                            boolean admin;
-                                                           ArrayList<Conversation> convos = new ArrayList<>();
 
                                                            email = users2.getString("Email");
                                                            password = users2.getString("Password");
@@ -132,7 +129,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                    }
 
                                                    JSONArray mess = res.getJSONArray("Messages");
-                                                   if(mess != null) {
+                                                   if (mess != null) {
                                                        for (int j = 0; j < mess.length(); j++) {
                                                            JSONObject mess2 = (JSONObject) mess.get(j);
 
@@ -155,11 +152,23 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                    }
 
 
-                                                   Conversation con = new Conversation(key, conversationName,administrator, members, messages);
+                                                   Conversation con = new Conversation(key, conversationName, administrator, members, messages);
                                                    conversations.add(con);
-
-                                                   System.out.print("CONVERSATIONS " + con.getKey() + ", " + con.getConversationName());
-
+                                               }
+                                               if (conversations != null) {
+                                                   for (int i = 0; i < conversations.size(); i++) {
+                                                       for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
+                                                           if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser) || conversations.get(i).getAdministrator().equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                                                               if (convos.contains(conversations.get(i))) {
+                                                               } else {
+                                                                   convos.add(conversations.get(i));
+                                                               }
+                                                           }
+                                                       }
+                                                   }
+                                               }
+                                               for (int i = 0; i < convos.size(); i++)
+                                               {
                                                    final TableRow tableRow = new TableRow(getApplicationContext());
                                                    tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
                                                    tableRow.setBackgroundResource(R.drawable.corners);
@@ -167,24 +176,24 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                    tableRow.setGravity(Gravity.CENTER);
 
                                                    final TextView message = new TextView(getApplicationContext());
-                                                   message.setText(conversations.get(i).getConversationName());
+                                                   message.setText(convos.get(i).getConversationName());
                                                    message.setTextAppearance(getApplicationContext(), R.style.chat);
                                                    tableRow.setClickable(true);
 
                                                    tableRow.addView(message);
-                                                   rows.add(tableRow);
                                                    tableLayout.addView(tableRow);
 
                                                    final int f = i;
                                                    tableRow.setOnClickListener(new View.OnClickListener() {
                                                        public void onClick(View v) {
-                                                           saveKey(conversations.get(f).getKey(), getApplicationContext());
+                                                           saveKey(convos.get(f).getKey(), getApplicationContext());
                                                            chosenConvoKey = retrieveKey();
                                                            Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
                                                            startActivity(i);
                                                        }
                                                    });
                                                }
+
                                            } catch (JSONException e) {
                                                e.printStackTrace();
                                                Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -197,29 +206,19 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                        public void onSuccess(JSONObject result) {
 
                                        }
+
+                                      public void onSuccess(String result){
+
+                                      }
+
+                                       @Override
+                                       public void onError(VolleyError error)
+                                       {
+                                           Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                       }
                                    }
         );
     }
-
-    //THIS METHOD SHOULD NOT BE NEEDED WHEN ABOVE METHOD IS FIXED
-    /*public ArrayList<Conversation> getConversationsForUser(String email)
-    {
-        ArrayList<Conversation> convos = new ArrayList<>();
-        if (retrieveAllConversations() != null) {
-            for (int i = 0; i < retrieveAllConversations().size(); i++) {
-                for (int j = 0; j < retrieveAllConversations().get(i).getMembers().size(); j++) {
-                    if (retrieveAllConversations().get(i).getMembers().get(j).getEmail().equalsIgnoreCase(email) || retrieveAllConversations().get(i).getAdministrator().equalsIgnoreCase(email)) {
-                        if (convos.contains(retrieveAllConversations().get(i))) {
-                        } else {
-                            convos.add(retrieveAllConversations().get(i));
-                        }
-                    }
-                }
-            }
-        }
-        //}
-        return convos;
-    }*/
 
     public static void saveKey(String key, Context ctx)
     {

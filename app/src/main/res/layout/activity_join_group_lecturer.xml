@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:text="Add Conversation"
+        android:text="Join Group"
         android:textStyle="bold"
         android:background="@drawable/convo_heading"
         android:layout_marginTop="10dp"
@@ -27,33 +27,15 @@
         android:textSize="25dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:gravity="center"
-        android:id="@+id/heading1"/>
+        android:id="@+id/heading2"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Name of Group:"
-        android:id="@+id/groupName"
-        android:layout_below="@+id/heading1"
-        android:layout_centerHorizontal="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/groupNameInput"
-        android:layout_alignTop="@+id/tv"
-        android:layout_alignRight="@+id/groupName"
-        android:layout_alignEnd="@+id/groupName"
-        android:layout_alignLeft="@+id/groupName"
-        android:layout_alignStart="@+id/groupName" />
 
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Group"
-        android:id="@+id/createGroupButton"
+        android:text="Join Group"
+        android:id="@+id/joinGroup1"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="91dp" />
@@ -63,7 +45,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text=""
-        android:id="@+id/tv"
+        android:id="@+id/tv1"
         android:textSize="30dp"
         android:layout_below="@+id/groupName"
         android:paddingTop="60dp"
@@ -72,20 +54,21 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/enrolKey"
-        android:layout_below="@+id/enrolKeyText"
-        android:layout_alignLeft="@+id/enrolKeyText"
-        android:layout_alignStart="@+id/enrolKeyText"
-        android:layout_alignRight="@+id/enrolKeyText"
-        android:layout_alignEnd="@+id/enrolKeyText" />
+        android:id="@+id/enrolKey1"
+        android:layout_below="@+id/enrolKeyText1"
+        android:layout_alignLeft="@+id/enrolKeyText1"
+        android:layout_alignStart="@+id/enrolKeyText1"
+        android:layout_alignRight="@+id/enrolKeyText1"
+        android:layout_alignEnd="@+id/enrolKeyText1" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Set Enrolement Key: "
-        android:id="@+id/enrolKeyText"
-        android:layout_below="@+id/tv"
+        android:id="@+id/enrolKeyText1"
+        android:layout_below="@+id/heading2"
+        android:paddingTop="60dp"
         android:layout_centerHorizontal="true" />
 
 

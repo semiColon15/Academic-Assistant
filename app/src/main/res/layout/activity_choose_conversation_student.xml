@@ -9,7 +9,7 @@
         android:layout_height="40dp"
         android:text="Join Group"
         android:gravity="center"
-        android:id="@+id/addGroup_stu"/>
+        android:id="@+id/joinGroup_stu"/>
 
     <Button
         android:layout_width="wrap_content"

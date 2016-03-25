@@ -1,7 +1,7 @@
 package model;
 
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -13,11 +13,9 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.hooper.kenneth.academicassistant.LogInActivity;
 import com.hooper.kenneth.academicassistant.SignUpActivity;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -27,63 +25,50 @@ public class UserServiceConnectivity {
 
     private Context context;
     private RequestQueue mRequestQueue;
+    private ProgressDialog pDialog;
 
-    String baseUrl = "http://academicassistantservice.azurewebsites.net/api/";
+    String baseUrl = "http://academicassistantservice2.azurewebsites.net/api/";
     private static String TAG = SignUpActivity.class.getSimpleName();
 
-    private String[] allEmails;
-    private String[] allPasswords;
-    private boolean adminLevel;
-
-    static String token;
-
-    public UserServiceConnectivity(Context context)
+    public UserServiceConnectivity(Context context, ProgressDialog dialog)
     {
         this.context = context;
         mRequestQueue = Volley.newRequestQueue(context);
-        retrieveAllUserEmailAddresses();
-        retrieveAllPasswords();
+        pDialog = dialog;
     }
 
-    public void registerUserWithService(final User user)
+    public void registerUserWithService(final ServerCallback callback, final User user)
     {
         String url = baseUrl + "Account/Register/?";
         final HashMap<String, String> params = new HashMap<>();
+        showpDialog();
 
-        params.put("Password", user.getPassword());
         params.put("Email", user.getEmail());
+        params.put("Password", user.getPassword());
         params.put("ConfirmPassword", user.getConfirmPassword());
-
-        JSONObject n = new JSONObject(params);
-
-        System.out.println("THIS IS WHAT PARAMS LOOKS LIKE 1:  " + n);
 
         CustomJsonObjectRequest req = new CustomJsonObjectRequest(url, new JSONObject(params),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            registerUser(user);
 
-                            Toast.makeText(context, "Added Acount", Toast.LENGTH_LONG).show();
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(context, "Account Error", Toast.LENGTH_LONG).show();
-                        }
+                        callback.onSuccess(response);
+                        hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error is here 1: ", error.getMessage());
                 Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
+                hidepDialog();
             }
         });
         mRequestQueue.add(req);
     }
 
-    public void registerUser(final User user)
+    public void registerUser(final ServerCallback callback, final User user)
     {
+        showpDialog();
         String url = baseUrl + "Users/PostUser/?";
         HashMap<String, String> params = new HashMap<>();
         params.put("Email", user.getEmail());
@@ -95,49 +80,35 @@ public class UserServiceConnectivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            VolleyLog.v("Response:%n %s", response.toString(4));
-                            Toast.makeText(context, "Added Acount to users", Toast.LENGTH_LONG).show();
 
-                            getToken(user);
+                        callback.onSuccess(response);
+                        hidepDialog();
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(context, "Account Error", Toast.LENGTH_LONG).show();
-                        }
                     }
                 }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {VolleyLog.e("Error is here 2: ", error.getMessage());
                     System.out.println(error.toString());
                     Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
+                    hidepDialog();
                 }
             });
 
         mRequestQueue.add(req);
     }
 
-    public void getToken(final User user)
+    public void getToken(final ServerCallback callback, final User user)
     {
-        final String Url2 = "http://academicassistantservice.azurewebsites.net/token";
+        showpDialog();
+        final String Url2 = "http://academicassistantservice2.azurewebsites.net/token";
 
         CustomBodyStringRequest req2 = new CustomBodyStringRequest(Url2,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        try {
-                            JSONObject jsonResponse = new JSONObject(response);
-                            token = jsonResponse.getString("access_token");
 
-                            LogInActivity.saveToken("token.txt", token, context);
-
-                            VolleyLog.v("Response:%n %s", response);
-                            Toast.makeText(context, "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(context, "Account Registration Error", Toast.LENGTH_LONG).show();
-                        }
+                        callback.onSuccess(response);
+                        hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -145,6 +116,7 @@ public class UserServiceConnectivity {
                 VolleyLog.e("Error is here: ", error.getMessage());
                 System.out.println(error.toString());
                 Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
+                hidepDialog();
             }
         })
         {
@@ -161,116 +133,54 @@ public class UserServiceConnectivity {
                 return pars;
             }
         };
-        //hidepDialog();
 
         mRequestQueue.add(req2);
     }
 
-    public void retrieveAllUserEmailAddresses()
+
+
+    public void retrieveAllUsers(final ServerCallback callback)
     {
         String url = "Users/GetUsers";
         String Url = baseUrl + url;
-
+        showpDialog();
         JsonArrayRequest req = new JsonArrayRequest(Url,
                 new Response.Listener<JSONArray>() {
 
                     @Override
                     public void onResponse(JSONArray response) {
-                        Log.d(TAG, response.toString());
 
-                        try {
+                        callback.onSuccess(response);
+                        hidepDialog();
 
-                            allEmails = new String[response.length()];
-                            for (int i = 0; i < response.length(); i++) {
-
-                                JSONObject emails = (JSONObject) response.get(i);
-
-                                allEmails[i] = emails.getString("Email");
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hidepDialog();
             }
         });
 
-        // Adding request to request queue
         mRequestQueue.add(req);
     }
 
-    public String[] getAllEmailAddresses()
-    {
-        return allEmails;
-    }
 
-    public void retrieveAllPasswords()
-    {
-        String url = "Users/GetUsers";
-        String Url = baseUrl + url;
 
-        JsonArrayRequest req = new JsonArrayRequest(Url,
-                new Response.Listener<JSONArray>() {
-
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        Log.d(TAG, response.toString());
-
-                        try {
-
-                            allPasswords = new String[response.length()];
-                            for (int i = 0; i < response.length(); i++) {
-
-                                JSONObject passwords = (JSONObject) response.get(i);
-
-                                allPasswords[i] = passwords.getString("Password");
-                                System.out.println("UP:  " + allPasswords[i]);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context, "WARNING: Check Internet Connection!!", Toast.LENGTH_LONG).show();
-            }
-        });
-
-        // Adding request to request queue
-        mRequestQueue.add(req);
-    }
-
-    public String[] getAllPasswords()
-    {
-        return allPasswords;
-    }
-
-    public void checkUserAdminLevel(final String username)
+    public void checkUserAdminLevel(final ServerCallback callback, final String username)
     {
         String url = "Users/GetUser/?username=" + username;
         String Url = baseUrl + url;
+        showpDialog();
 
-        JsonObjectRequest req = new JsonObjectRequest
-                (Request.Method.GET, Url, null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            String adminLevel_ = response.getString("Admin");
-                            LogInActivity.saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), context);
-                            System.out.println("ADMIN T/F: " + adminLevel_);
-                            adminLevel =  Boolean.valueOf(adminLevel_);
-                        }
-                        catch(JSONException e){
-                            System.out.println(e.toString());
-                        }
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+
                     }
                 }, new Response.ErrorListener() {
 
@@ -278,6 +188,7 @@ public class UserServiceConnectivity {
                     public void onErrorResponse(VolleyError error) {
 
                         System.out.println(error.toString());
+                        hidepDialog();
 
                     }
                 });
@@ -286,14 +197,13 @@ public class UserServiceConnectivity {
         mRequestQueue.add(req);
     }
 
-    public boolean getAdminLevel()
-    {
-        return adminLevel;
+    private void showpDialog() {
+        if (!pDialog.isShowing())
+            pDialog.show();
     }
 
-    public String getToken()
-    {
-        return token;
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
-
 }

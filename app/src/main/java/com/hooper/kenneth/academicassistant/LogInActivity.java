@@ -1,5 +1,6 @@
 package com.hooper.kenneth.academicassistant;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +10,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,7 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import model.ConversationServiceConnectivity;
+import model.ServerCallback;
 import model.User;
 import model.UserServiceConnectivity;
 
@@ -24,8 +32,6 @@ public class LogInActivity extends AppCompatActivity {
 
     private EditText usernameInput;
     private EditText passwordInput;
-    private Button logInButton;
-    private Button signUpButton;
 
     private String[] emails;
     private String[] passwords;
@@ -33,12 +39,12 @@ public class LogInActivity extends AppCompatActivity {
     public static String token;
     public static String password;
 
-    static String loggedInUser;
-    static boolean loggedInUserType;
-    private boolean loggedIn;
-    static ConversationServiceConnectivity c;
+    public static String loggedInUser;
+    public static boolean loggedInUserType;
 
     private UserServiceConnectivity userServiceConnectivity;
+
+    private ProgressDialog pDialog;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,21 +53,24 @@ public class LogInActivity extends AppCompatActivity {
         usernameInput = (EditText) findViewById(R.id.usernameInput);
         passwordInput = (EditText) findViewById(R.id.passwordInput);
 
-        logInButton = (Button) findViewById(R.id.LogInButton);
-        signUpButton = (Button) findViewById(R.id.signUpButton);
+        Button logInButton = (Button) findViewById(R.id.LogInButton);
+        Button signUpButton = (Button) findViewById(R.id.signUpButton);
 
-        //c = new ConversationServiceConnectivity(getApplicationContext());
-        userServiceConnectivity = new UserServiceConnectivity(getApplicationContext());
+        pDialog = new ProgressDialog(this);
+
+        userServiceConnectivity = new UserServiceConnectivity(getApplicationContext(), pDialog);
 
         //Check if already logged in.
         token = retrieveToken();
         password = retrievePassword();
         loggedInUser = retrieveLoggedInUser();
         loggedInUserType = retrieveLoggedInUserType();
-        System.out.println("LogInActivity::: Initial Log In: " + token);
-        System.out.println("INITIAL TYPE: " + loggedInUserType);
+        //System.out.println("LogInActivity::: Initial Log In: " + token);
+        //System.out.println("INITIAL TYPE: " + loggedInUserType);
 
-        if (token.equals("") || token == null) {
+        boolean loggedIn;
+
+        if (token.equals("")) {
             loggedIn = false;
         }
         else {
@@ -73,16 +82,16 @@ public class LogInActivity extends AppCompatActivity {
             if(loggedInUserType) {
                 Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                 startActivity(t);
-                System.out.println("USER: " + loggedInUser);
-                System.out.println("ADMIN: " + loggedInUserType);
+                //System.out.println("USER: " + loggedInUser);
+               // System.out.println("ADMIN: " + loggedInUserType);
                 finish();
             }
             else
             {
                 Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
                 startActivity(t);
-                System.out.println("USER: " + loggedInUser);
-                System.out.println("ADMIN: " + loggedInUserType);
+                //System.out.println("USER: " + loggedInUser);
+                //System.out.println("ADMIN: " + loggedInUserType);
                 finish();
             }
         }
@@ -91,9 +100,44 @@ public class LogInActivity extends AppCompatActivity {
         logInButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                emails = userServiceConnectivity.getAllEmailAddresses();
-                passwords = userServiceConnectivity.getAllPasswords();
-                userServiceConnectivity.checkUserAdminLevel(usernameInput.getText().toString());
+                userServiceConnectivity.retrieveAllUsers(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject response) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray response) {
+                        try {
+
+                            emails = new String[response.length()];
+                            passwords = new String[response.length()];
+                            for (int i = 0; i < response.length(); i++) {
+
+                                JSONObject emailsj = (JSONObject) response.get(i);
+
+                                emails[i] = emailsj.getString("Email");
+                                passwords[i] = emailsj.getString("Password");
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+
+                    }
+
+                    @Override
+                    public void onError(VolleyError error)
+                    {
+                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+
+
 
                 boolean g = false;
                 if(passwords != null) {
@@ -105,26 +149,98 @@ public class LogInActivity extends AppCompatActivity {
                     }
                     if (g) {
                         //TODO CHECK CURRENT TOKEN IS STILL VALID
-                        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                        startActivity(t);
+
                         User user = new User(usernameInput.getText().toString(), passwordInput.getText().toString(), passwordInput.getText().toString(), loggedInUserType);
 
-                        userServiceConnectivity.getToken(user);
+                        userServiceConnectivity.getToken(new ServerCallback() {
+                            @Override
+                            public void onSuccess(JSONObject result) {
 
-                        token = userServiceConnectivity.getToken();
-                        password = passwordInput.getText().toString();
-                        //loggedInUser = usernameInput.getText().toString();
-                        loggedInUserType = userServiceConnectivity.getAdminLevel();
+                            }
 
-                        System.out.println("AAAAAAAAAAAAAAA " + token);
-                        System.out.println("Logged IN USer: " + loggedInUser);
-                        System.out.println("ADMIN TYPE IODFINDIND: " + loggedInUserType);
-                        saveToken("token.txt", token, getApplicationContext());
-                        savePassword("password.txt", password, getApplicationContext());
-                        saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
-                        saveLoggedInUserType("loggedInUserType.txt", loggedInUserType, getApplicationContext());
-                        System.out.println("SAVED USER: " + retrieveLoggedInUser());
-                        finish();
+                            @Override
+                            public void onSuccess(JSONArray result) {
+
+                            }
+
+                            @Override
+                            public void onSuccess(String response) {
+                                try {
+                                    JSONObject jsonResponse = new JSONObject(response);
+                                    token = jsonResponse.getString("access_token");
+
+                                    LogInActivity.saveToken("token.txt", token, getApplicationContext());
+
+                                    VolleyLog.v("Response:%n %s", response);
+                                    Toast.makeText(getApplicationContext(), "Token Recieved", Toast.LENGTH_LONG).show();
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getApplicationContext(), "Account Registration Error", Toast.LENGTH_LONG).show();
+                                }
+
+                                password = passwordInput.getText().toString();
+                                loggedInUser = usernameInput.getText().toString();
+
+                                userServiceConnectivity.checkUserAdminLevel(new ServerCallback() {
+                                    @Override
+                                    public void onSuccess(JSONObject result) {
+                                        try {
+                                            String adminLevel_ = result.getString("Admin");
+
+                                    /*System.out.println("AAAAAAAAAAAAAAA " + token);
+                                    System.out.println("Logged IN USer: " + loggedInUser);
+                                    System.out.println("ADMIN TYPE IODFINDIND: " + loggedInUserType);*/
+
+                                            saveToken("token.txt", token, getApplicationContext());
+                                            savePassword("password.txt", password, getApplicationContext());
+                                            saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
+                                            saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
+
+                                            //System.out.println("SAVED USER: " + retrieveLoggedInUser());
+
+                                            if(Boolean.valueOf(adminLevel_)==true) {
+                                                Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                startActivity(t);
+                                                finish();
+                                            }
+                                            else
+                                            {
+                                                Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                                startActivity(t);
+                                                finish();
+                                            }
+
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onSuccess(JSONArray result) {
+
+                                    }
+
+                                    @Override
+                                    public void onSuccess(String result) {
+
+                                    }
+
+                                    @Override
+                                    public void onError(VolleyError error)
+                                    {
+                                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                    }
+                                }, usernameInput.getText().toString());
+                            }
+
+                            @Override
+                            public void onError(VolleyError error)
+                            {
+                                Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                            }
+                        }, user);
+
                     } else {
                         Toast.makeText(getApplicationContext(), "ERROR", Toast.LENGTH_LONG).show();
                     }
@@ -154,9 +270,6 @@ public class LogInActivity extends AppCompatActivity {
             {
                 token += p[i];
             }
-
-            System.out.println("SOSN TOKEN: " + token);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -189,8 +302,6 @@ public class LogInActivity extends AppCompatActivity {
                 pword += p[i];
             }
 
-            System.out.println("SOSN TOKEN: " + pword);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -217,16 +328,12 @@ public class LogInActivity extends AppCompatActivity {
             File myDir = new File(getFilesDir().getAbsolutePath());
             BufferedReader br = new BufferedReader(new FileReader(myDir + "/loggedInUser.txt"));
             String s = br.readLine();
-            System.out.println("IN GETTING METHOD::::::::: " + s);
             char[] p = s.toCharArray();
             for(int i = 7; i < s.length(); i++)
             {
                 user += p[i];
-                System.out.println("TRANSFERRING::::::: " + user);
             }
 
-            System.out.println("SOSN USER: " + user);
-            System.out.println("ORIGINAL:::::: " + s);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -261,9 +368,6 @@ public class LogInActivity extends AppCompatActivity {
                 type += p[i];
             }
 
-            System.out.println("SOSN TYPE: " + type);
-            System.out.println("SOSN TYPE 2: " + Boolean.valueOf(type));
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -282,10 +386,5 @@ public class LogInActivity extends AppCompatActivity {
         }catch(IOException e){
             e.printStackTrace();
         }
-    }
-
-    public static ConversationServiceConnectivity getConversationServiceConnectivity()
-    {
-        return c;
     }
 }

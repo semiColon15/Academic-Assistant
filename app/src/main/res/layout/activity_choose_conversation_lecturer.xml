@@ -54,4 +54,12 @@
             android:layout_gravity="center_horizontal">
         </TableLayout>
     </ScrollView>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Join Group"
+        android:id="@+id/joinGroup"
+        android:layout_above="@+id/heading"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
