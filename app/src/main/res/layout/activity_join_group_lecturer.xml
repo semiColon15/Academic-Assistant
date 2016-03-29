@@ -2,40 +2,22 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/custom_background"
+    android:background="@color/background"
     android:id="@+id/glayout">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="Log Out"
-        android:gravity="center"
-        android:id="@+id/logout1"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <TextView
+    <include
+        layout="@layout/toolbar"
+        android:id="@+id/tool4"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Join Group"
-        android:textStyle="bold"
-        android:background="@drawable/convo_heading"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_below="@+id/logout1"
-        android:textSize="25dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:gravity="center"
-        android:id="@+id/heading2"/>
-
-
+        android:layout_height="wrap_content"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Join Group"
         android:id="@+id/joinGroup1"
+        android:textColor="@color/white"
+        android:background="@color/blueGrey"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="91dp" />
@@ -46,8 +28,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text=""
         android:id="@+id/tv1"
-        android:textSize="30dp"
-        android:layout_below="@+id/groupName"
+        android:textSize="30sp"
         android:paddingTop="60dp"
         android:layout_centerHorizontal="true" />
 
@@ -56,6 +37,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/enrolKey1"
         android:layout_below="@+id/enrolKeyText1"
+        android:paddingTop="20dp"
         android:layout_alignLeft="@+id/enrolKeyText1"
         android:layout_alignStart="@+id/enrolKeyText1"
         android:layout_alignRight="@+id/enrolKeyText1"
@@ -65,9 +47,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Set Enrolement Key: "
+        android:text="Enter Enrolement Key: "
+        android:textColor="#000000"
         android:id="@+id/enrolKeyText1"
-        android:layout_below="@+id/heading2"
+        android:layout_below="@+id/tool4"
         android:paddingTop="60dp"
         android:layout_centerHorizontal="true" />
 

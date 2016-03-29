@@ -114,7 +114,6 @@ public class UserServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error is here: ", error.getMessage());
-                System.out.println(error.toString());
                 Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }

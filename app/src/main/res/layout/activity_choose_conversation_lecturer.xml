@@ -2,46 +2,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/custom_background">
+    android:background="@color/background">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="Add Group"
-        android:gravity="center"
-        android:id="@+id/addGroup"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="Log Out"
-        android:gravity="center"
-        android:id="@+id/logout"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <TextView
+    <include
+        layout="@layout/toolbar"
+        android:id="@+id/tool"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Conversations"
-        android:textStyle="bold"
-        android:background="@drawable/convo_heading"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_below="@+id/logout"
-        android:textSize="25dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:gravity="center"
-        android:id="@+id/heading"/>
+        android:layout_height="wrap_content"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/heading"
+        android:layout_below="@+id/tool"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingTop="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:id="@+id/scroll2"
         android:scrollbars="vertical"
@@ -55,11 +30,4 @@
         </TableLayout>
     </ScrollView>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Join Group"
-        android:id="@+id/joinGroup"
-        android:layout_above="@+id/heading"
-        android:layout_centerHorizontal="true" />
 </RelativeLayout>

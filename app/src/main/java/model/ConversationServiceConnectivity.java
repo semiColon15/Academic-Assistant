@@ -80,6 +80,45 @@ public class ConversationServiceConnectivity {
         mRequestQueue.add(req);
     }
 
+    public void getConversationsForUser(final ServerCallback callback, String email)
+    {
+        String url = "Conversations/GetConversationForUser?email="+email;
+        String Url = baseUrl + url;
+        showpDialog();
+
+        JsonArrayRequest req = new JsonArrayRequest(Url,
+                new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Log.d(TAG, response.toString());
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        mRequestQueue.add(req);
+    }
+
 
 
     public void CreateConversation(final ServerCallback callback, String key, String name, String admin)
@@ -89,6 +128,7 @@ public class ConversationServiceConnectivity {
         params.put("Key", key);
         params.put("ConversationName", name);
         params.put("Administrator", admin);
+        showpDialog();
 
         JsonObjectRequest req = new JsonObjectRequest(baseUrl, new JSONObject(params),
                 new Response.Listener<JSONObject>() {
@@ -96,11 +136,13 @@ public class ConversationServiceConnectivity {
                     public void onResponse(JSONObject response) {
                         try {
                                 callback.onSuccess(response);
+                            hidepDialog();
                             VolleyLog.v("Response:%n %s", response.toString(4));
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(context, "ERROR creating group", Toast.LENGTH_LONG).show();
+                            hidepDialog();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -108,6 +150,7 @@ public class ConversationServiceConnectivity {
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
                 Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                hidepDialog();
             }
         }){
             @Override
@@ -128,6 +171,7 @@ public class ConversationServiceConnectivity {
         params.put("Email", email);
         params.put("Password", password);
         params.put("Admin", admin);
+        showpDialog();
 
         JsonObjectRequest req = new JsonObjectRequest(baseUrl, new JSONObject(params),
                 new Response.Listener<JSONObject>() {
@@ -135,12 +179,14 @@ public class ConversationServiceConnectivity {
                     public void onResponse(JSONObject response) {
                         try {
                             callback.onSuccess(response);
+                            hidepDialog();
 
                             VolleyLog.v("Response:%n %s", response.toString(4));
                             Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
+                            hidepDialog();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -149,6 +195,7 @@ public class ConversationServiceConnectivity {
                 callback.onError(error);
                 VolleyLog.e("Error: ", error.getMessage());
                 Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                hidepDialog();
             }
         }){
             @Override

@@ -3,9 +3,15 @@ package com.hooper.kenneth.academicassistant;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
@@ -41,6 +47,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     public static String chosenConvoKey;
     private ProgressDialog pDialog;
     private ArrayList<Conversation> conversations;
+    Toolbar toolbar;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,29 +60,75 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
         tableLayout = (TableLayout) findViewById(R.id.convos_stu);
         tableLayout.setVerticalScrollBarEnabled(true);
-        Button logOut = (Button) findViewById(R.id.logout_stu);
-        Button joinGroup = (Button) findViewById(R.id.joinGroup_stu);
 
-        logOut.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Display icon in the toolbar
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        mTitle.setText("Conversations");
+        mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
+
+        fillConvos();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu_stu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.miInfo_stu:
+                //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
+                //startActivity(i);
+                //finish();
+                return true;
+            case R.id.miJoinGroup_stu:
+                Intent l = new Intent(getApplicationContext(), JoinGroupActivity.class);
+                startActivity(l);
+                //finish();
+                return true;
+            case R.id.miLogout_stu:
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
-                Intent i = new Intent(getApplicationContext(), LogInActivity.class);
-                startActivity(i);
+                Intent e = new Intent(getApplicationContext(), LogInActivity.class);
+                startActivity(e);
                 finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public static void buttonEffect(View button){
+        button.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        v.getBackground().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
+                        v.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
+                }
+                return false;
             }
         });
-
-        joinGroup.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        fillConvos();
     }
 
     public void fillConvos() {
@@ -168,12 +221,14 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                                    tableRow.setPadding(20, 20, 20, 20);
                                                    tableRow.setGravity(Gravity.CENTER);
 
-                                                   final TextView message = new TextView(getApplicationContext());
-                                                   message.setText(convos.get(i).getConversationName());
-                                                   message.setTextAppearance(getApplicationContext(), R.style.chat);
+                                                   final TextView conv = new TextView(getApplicationContext());
+                                                   conv.setText(convos.get(i).getConversationName());
+                                                   conv.setTextAppearance(getApplicationContext(), R.style.chat);
+                                                   conv.setShadowLayer(10, 3, 3, Color.BLACK);
                                                    tableRow.setClickable(true);
+                                                   buttonEffect(tableRow);
 
-                                                   tableRow.addView(message);
+                                                   tableRow.addView(conv);
                                                    tableLayout.addView(tableRow);
 
                                                    final int f = i;

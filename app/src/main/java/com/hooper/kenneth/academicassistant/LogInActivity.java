@@ -3,11 +3,14 @@ package com.hooper.kenneth.academicassistant;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -48,6 +51,7 @@ public class LogInActivity extends AppCompatActivity {
     public static boolean loggedInUserType;
 
     private Toolbar toolbar;
+    ProgressDialog pDialog;
 
     private UserServiceConnectivity userServiceConnectivity;
 
@@ -61,13 +65,22 @@ public class LogInActivity extends AppCompatActivity {
         Button logInButton = (Button) findViewById(R.id.LogInButton);
         Button signUpButton = (Button) findViewById(R.id.signUpButton);
 
-        ProgressDialog pDialog = new ProgressDialog(this);
+        buttonEffect(logInButton);
+        buttonEffect(signUpButton);
+
+        pDialog = new ProgressDialog(this);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        TextView c = getActionBarTextView();
-        System.out.println("^^^^^^^^^^ " + c.getText().toString());
+        // Display icon in the toolbar
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        mTitle.setText("Log In");
+        mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext(), pDialog);
 
@@ -78,6 +91,8 @@ public class LogInActivity extends AppCompatActivity {
         loggedInUserType = retrieveLoggedInUserType();
 
         boolean loggedIn;
+
+        //TODO:: CHECK TO SEE IF TOKEN IS EXPIRED HERE
 
         if (token.equals("")) {
             loggedIn = false;
@@ -104,6 +119,7 @@ public class LogInActivity extends AppCompatActivity {
 
         logInButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                showpDialog();
 
                 userServiceConnectivity.retrieveAllUsers(new ServerCallback() {
                     @Override
@@ -128,91 +144,24 @@ public class LogInActivity extends AppCompatActivity {
                             e.printStackTrace();
                             Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
-                    }
 
-                    @Override
-                    public void onSuccess(String result) {
-
-                    }
-
-                    @Override
-                    public void onError(VolleyError error)
-                    {
-                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
-                    }
-                });
-
-
-
-                boolean g = false;
-                if(passwords != null) {
-                    for (int i = 0; i < passwords.length; i++) {
-                        if (usernameInput.getText().toString().trim().equals(emails[i]) && passwordInput.getText().toString().equals(passwords[i])) {
-                            g = true;
-                            loggedInUser = usernameInput.getText().toString();
-                        }
-                    }
-                    if (g) {
-                        //TODO CHECK CURRENT TOKEN IS STILL VALID
-
-                        User user = new User(usernameInput.getText().toString(), passwordInput.getText().toString(), passwordInput.getText().toString(), loggedInUserType);
-
-                        userServiceConnectivity.getToken(new ServerCallback() {
-                            @Override
-                            public void onSuccess(JSONObject result) {
-
-                            }
-
-                            @Override
-                            public void onSuccess(JSONArray result) {
-
-                            }
-
-                            @Override
-                            public void onSuccess(String response) {
-                                try {
-                                    JSONObject jsonResponse = new JSONObject(response);
-                                    token = jsonResponse.getString("access_token");
-
-                                    LogInActivity.saveToken("token.txt", token, getApplicationContext());
-
-                                    VolleyLog.v("Response:%n %s", response);
-                                    Toast.makeText(getApplicationContext(), "Token Recieved", Toast.LENGTH_LONG).show();
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    Toast.makeText(getApplicationContext(), "Account Registration Error", Toast.LENGTH_LONG).show();
+                        boolean g = false;
+                        if (passwords != null) {
+                            for (int i = 0; i < passwords.length; i++) {
+                                if (usernameInput.getText().toString().trim().equals(emails[i]) && passwordInput.getText().toString().equals(passwords[i])) {
+                                    g = true;
+                                    loggedInUser = usernameInput.getText().toString();
                                 }
+                            }
+                            if (g) {
+                                //TODO:: CHECK CURRENT TOKEN IS STILL VALID
 
-                                password = passwordInput.getText().toString();
-                                loggedInUser = usernameInput.getText().toString();
+                                User user = new User(usernameInput.getText().toString(), passwordInput.getText().toString(), passwordInput.getText().toString(), loggedInUserType);
 
-                                userServiceConnectivity.checkUserAdminLevel(new ServerCallback() {
+                                userServiceConnectivity.getToken(new ServerCallback() {
                                     @Override
                                     public void onSuccess(JSONObject result) {
-                                        try {
-                                            String adminLevel_ = result.getString("Admin");
 
-                                            saveToken("token.txt", token, getApplicationContext());
-                                            savePassword("password.txt", password, getApplicationContext());
-                                            saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
-                                            saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
-
-                                            if(Boolean.valueOf(adminLevel_)) {
-                                                Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                                                startActivity(t);
-                                                finish();
-                                            }
-                                            else
-                                            {
-                                                Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-                                                startActivity(t);
-                                                finish();
-                                            }
-
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
                                     }
 
                                     @Override
@@ -221,29 +170,90 @@ public class LogInActivity extends AppCompatActivity {
                                     }
 
                                     @Override
-                                    public void onSuccess(String result) {
+                                    public void onSuccess(String response) {
+                                        try {
+                                            JSONObject jsonResponse = new JSONObject(response);
+                                            token = jsonResponse.getString("access_token");
 
+                                            LogInActivity.saveToken("token.txt", token, getApplicationContext());
+
+                                            VolleyLog.v("Response:%n %s", response);
+                                            Toast.makeText(getApplicationContext(), "Token Recieved", Toast.LENGTH_LONG).show();
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Toast.makeText(getApplicationContext(), "Account Registration Error", Toast.LENGTH_LONG).show();
+                                        }
+
+                                        password = passwordInput.getText().toString();
+                                        loggedInUser = usernameInput.getText().toString();
+
+                                        userServiceConnectivity.checkUserAdminLevel(new ServerCallback() {
+                                            @Override
+                                            public void onSuccess(JSONObject result) {
+                                                try {
+                                                    String adminLevel_ = result.getString("Admin");
+
+                                                    saveToken("token.txt", token, getApplicationContext());
+                                                    savePassword("password.txt", password, getApplicationContext());
+                                                    saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
+                                                    saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
+
+                                                    if (Boolean.valueOf(adminLevel_)) {
+                                                        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                        startActivity(t);
+                                                        finish();
+                                                    } else {
+                                                        Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                                        startActivity(t);
+                                                        finish();
+                                                    }
+
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onSuccess(JSONArray result) {
+
+                                            }
+
+                                            @Override
+                                            public void onSuccess(String result) {
+
+                                            }
+
+                                            @Override
+                                            public void onError(VolleyError error) {
+                                                Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                            }
+                                        }, usernameInput.getText().toString());
                                     }
 
                                     @Override
-                                    public void onError(VolleyError error)
-                                    {
+                                    public void onError(VolleyError error) {
                                         Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                                     }
-                                }, usernameInput.getText().toString());
-                            }
+                                }, user);
 
-                            @Override
-                            public void onError(VolleyError error)
-                            {
-                                Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "ERROR", Toast.LENGTH_LONG).show();
                             }
-                        }, user);
-
-                    } else {
-                        Toast.makeText(getApplicationContext(), "ERROR", Toast.LENGTH_LONG).show();
+                        }
                     }
-                }
+
+                    @Override
+                    public void onSuccess(String result) {
+
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+                //hidepDialog();
             }
         });
 
@@ -257,11 +267,25 @@ public class LogInActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public static void buttonEffect(View button){
+        button.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        v.getBackground().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
+                        v.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     public String retrieveToken()
@@ -292,19 +316,6 @@ public class LogInActivity extends AppCompatActivity {
         }catch(IOException e){
             e.printStackTrace();
         }
-    }
-
-    private TextView getActionBarTextView() {
-        TextView titleTextView = null;
-
-        try {
-            Field f = toolbar.getClass().getDeclaredField("mTitleTextView");
-            f.setAccessible(true);
-            titleTextView = (TextView) f.get(toolbar);
-        } catch (NoSuchFieldException e) {
-        } catch (IllegalAccessException e) {
-        }
-        return titleTextView;
     }
 
     public String retrievePassword()
@@ -404,5 +415,15 @@ public class LogInActivity extends AppCompatActivity {
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void showpDialog() {
+        if (!pDialog.isShowing())
+            pDialog.show();
+    }
+
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 }
