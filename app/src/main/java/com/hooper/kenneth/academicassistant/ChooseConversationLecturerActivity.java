@@ -5,15 +5,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Gallery;
+import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -45,6 +51,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     private TableLayout tableLayout;
     private ConversationServiceConnectivity c;
     public static String chosenConvoKey;
+    public static String chosenGroupName;
     private ProgressDialog pDialog;
     private Toolbar toolbar;
     private ArrayList<Conversation> conversations;
@@ -52,10 +59,12 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_lecturer);
+
         pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
         chosenConvoKey = "";
+        chosenGroupName = "";
 
         tableLayout = (TableLayout) findViewById(R.id.convos);
         tableLayout.setVerticalScrollBarEnabled(true);
@@ -72,6 +81,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         mTitle.setText("Conversations");
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
+
         fillConvos();
     }
 
@@ -87,9 +97,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.miInfo:
-                //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
-                //startActivity(i);
-                //finish();
+                openPopUpWindow();
                 return true;
             case R.id.miCreateGroup:
                 Intent f = new Intent(getApplicationContext(), CreateGroupActivity.class);
@@ -105,6 +113,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
+                saveKey("", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
                 finish();
@@ -138,138 +147,161 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     public void fillConvos() {
         c.getConversationsForUser(new ServerCallback() {
 
-                                       @Override
-                                       public void onSuccess(JSONArray response) {
+                                      @Override
+                                      public void onSuccess(JSONArray response) {
 
-                                           conversations = new ArrayList<>();
-                                           final ArrayList<Conversation> convos = new ArrayList<>();
-                                           try {
-                                               for (int i = 0; i < response.length(); i++) {
+                                          conversations = new ArrayList<>();
+                                          final ArrayList<Conversation> convos = new ArrayList<>();
+                                          try {
+                                              for (int i = 0; i < response.length(); i++) {
 
-                                                   JSONObject res = (JSONObject) response.get(i);
+                                                  JSONObject res = (JSONObject) response.get(i);
 
-                                                   String key;
-                                                   String conversationName;
-                                                   String administrator;
-                                                   ArrayList<User> members = new ArrayList<>();
-                                                   ArrayList<Message> messages = new ArrayList<>();
+                                                  String key;
+                                                  String conversationName;
+                                                  String administrator;
+                                                  ArrayList<User> members = new ArrayList<>();
+                                                  ArrayList<Message> messages = new ArrayList<>();
 
-                                                   key = res.getString("Key");
-                                                   conversationName = res.getString("ConversationName");
-                                                   administrator = res.getString("Administrator");
+                                                  key = res.getString("Key");
+                                                  conversationName = res.getString("ConversationName");
+                                                  administrator = res.getString("Administrator");
 
-                                                   JSONArray users = res.getJSONArray("Users");
-                                                   if (users != null) {
-                                                       for (int j = 0; j < users.length(); j++) {
-                                                           JSONObject users2 = (JSONObject) users.get(j);
+                                                  JSONArray users = res.getJSONArray("Users");
+                                                  if (users != null) {
+                                                      for (int j = 0; j < users.length(); j++) {
+                                                          JSONObject users2 = (JSONObject) users.get(j);
 
-                                                           String email;
-                                                           String password;
-                                                           boolean admin;
+                                                          String email;
+                                                          String password;
+                                                          boolean admin;
 
-                                                           email = users2.getString("Email");
-                                                           password = users2.getString("Password");
-                                                           admin = users2.getBoolean("Admin");
+                                                          email = users2.getString("Email");
+                                                          password = users2.getString("Password");
+                                                          admin = users2.getBoolean("Admin");
 
-                                                           User u = new User(email, password, admin, convos);
+                                                          User u = new User(email, password, admin, convos);
 
-                                                           members.add(u);
-                                                       }
-                                                   }
+                                                          members.add(u);
+                                                      }
+                                                  }
 
-                                                   JSONArray mess = res.getJSONArray("Messages");
-                                                   if (mess != null) {
-                                                       for (int j = 0; j < mess.length(); j++) {
-                                                           JSONObject mess2 = (JSONObject) mess.get(j);
+                                                  JSONArray mess = res.getJSONArray("Messages");
+                                                  if (mess != null) {
+                                                      for (int j = 0; j < mess.length(); j++) {
+                                                          JSONObject mess2 = (JSONObject) mess.get(j);
 
-                                                           int id;
-                                                           String content;
-                                                           String recipient;
-                                                           String sender;
-                                                           String CKey;
+                                                          int id;
+                                                          String content;
+                                                          String recipient;
+                                                          String sender;
+                                                          String CKey;
 
-                                                           id = mess2.getInt("MessageID");
-                                                           content = mess2.getString("MessageContent");
-                                                           recipient = mess2.getString("Recipient");
-                                                           sender = mess2.getString("Sender");
-                                                           CKey = mess2.getString("ConversationKey");
+                                                          id = mess2.getInt("MessageID");
+                                                          content = mess2.getString("MessageContent");
+                                                          recipient = mess2.getString("Recipient");
+                                                          sender = mess2.getString("Sender");
+                                                          CKey = mess2.getString("ConversationKey");
 
-                                                           Message u = new Message(id, content, recipient, sender, CKey);
+                                                          Message u = new Message(id, content, recipient, sender, CKey);
 
-                                                           messages.add(u);
-                                                       }
-                                                   }
-
-
-                                                   Conversation con = new Conversation(key, conversationName, administrator, members, messages);
-                                                   conversations.add(con);
-                                               }
-                                               if (conversations != null) {
-                                                   for (int i = 0; i < conversations.size(); i++) {
-                                                       for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
-                                                           if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser)) {
-                                                               if (convos.contains(conversations.get(i))) {
-                                                               } else {
-                                                                   convos.add(conversations.get(i));
-                                                               }
-                                                           }
-                                                       }
-                                                   }
-                                               }
-                                               for (int i = 0; i < convos.size(); i++)
-                                               {
-                                                   final TableRow tableRow = new TableRow(getApplicationContext());
-                                                   tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
-                                                   tableRow.setBackgroundResource(R.drawable.corners);
-                                                   tableRow.setPadding(20, 20, 20, 20);
-                                                   tableRow.setGravity(Gravity.CENTER);
-
-                                                   final TextView conv = new TextView(getApplicationContext());
-                                                   conv.setText(convos.get(i).getConversationName());
-                                                   conv.setTextAppearance(getApplicationContext(), R.style.chat);
-                                                   conv.setShadowLayer(10, 3, 3, Color.BLACK);
-                                                   tableRow.setClickable(true);
-                                                   buttonEffect(tableRow);
-
-                                                   tableRow.addView(conv);
-                                                   tableLayout.addView(tableRow);
-
-                                                   final int f = i;
-                                                   tableRow.setOnClickListener(new View.OnClickListener() {
-                                                       public void onClick(View v) {
-                                                           saveKey(convos.get(f).getKey(), getApplicationContext());
-                                                           chosenConvoKey = retrieveKey();
-                                                           Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
-                                                           startActivity(i);
-                                                       }
-                                                   });
-                                               }
-
-                                           } catch (JSONException e) {
-                                               e.printStackTrace();
-                                               Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                           }
+                                                          messages.add(u);
+                                                      }
+                                                  }
 
 
-                                       }
+                                                  Conversation con = new Conversation(key, conversationName, administrator, members, messages);
+                                                  conversations.add(con);
+                                              }
+                                              if (conversations != null) {
+                                                  for (int i = 0; i < conversations.size(); i++) {
+                                                      for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
+                                                          if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                                                              if (convos.contains(conversations.get(i))) {
+                                                              } else {
+                                                                  convos.add(conversations.get(i));
+                                                              }
+                                                          }
+                                                      }
+                                                  }
+                                              }
+                                              for (int i = 0; i < convos.size(); i++) {
+                                                  final TableRow tableRow = new TableRow(getApplicationContext());
+                                                  tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
+                                                  tableRow.setBackgroundResource(R.drawable.corners);
+                                                  tableRow.setPadding(20, 20, 20, 20);
+                                                  tableRow.setGravity(Gravity.CENTER);
 
-                                       @Override
-                                       public void onSuccess(JSONObject result) {
+                                                  final TextView conv = new TextView(getApplicationContext());
+                                                  conv.setText(convos.get(i).getConversationName());
+                                                  conv.setTextAppearance(getApplicationContext(), R.style.chat);
+                                                  conv.setShadowLayer(10, 3, 3, Color.BLACK);
+                                                  tableRow.setClickable(true);
+                                                  buttonEffect(tableRow);
 
-                                       }
+                                                  tableRow.addView(conv);
+                                                  tableLayout.addView(tableRow);
 
-                                       public void onSuccess(String result){
+                                                  final int f = i;
+                                                  tableRow.setOnClickListener(new View.OnClickListener() {
+                                                      public void onClick(View v) {
+                                                          saveKey(convos.get(f).getKey(), getApplicationContext());
+                                                          chosenConvoKey = convos.get(f).getKey();
+                                                          chosenGroupName = convos.get(f).getConversationName();
 
-                                       }
+                                                          System.out.println("WWWWWWOOOOOOO " + chosenConvoKey);
+                                                          System.out.println("WWWWWWOOOOOOO " + chosenGroupName);
+                                                          Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
+                                                          startActivity(i);
+                                                      }
+                                                  });
+                                              }
 
-                                       @Override
-                                       public void onError(VolleyError error)
-                                       {
-                                           Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
-                                       }
-                                   }, LogInActivity.loggedInUser
+                                          } catch (JSONException e) {
+                                              e.printStackTrace();
+                                              Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                          }
+                                      }
+
+                                      @Override
+                                      public void onSuccess(JSONObject result) {
+
+                                      }
+
+                                      public void onSuccess(String result) {
+
+                                      }
+
+                                      @Override
+                                      public void onError(VolleyError error) {
+                                          Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                      }
+                                  }, LogInActivity.loggedInUser
         );
     }
+
+    public void openPopUpWindow()
+    {
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationLecturerActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_message_info_popup,
+                (ViewGroup) findViewById(R.id.glayout1));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 850, true);
+
+
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        Button closePopup = (Button) layout.findViewById(R.id.okButton_info);
+        closePopup.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+
+        });
+    }
+
 
     public static void saveKey(String key, Context ctx)
     {

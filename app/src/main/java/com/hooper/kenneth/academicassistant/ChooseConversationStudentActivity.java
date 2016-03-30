@@ -13,7 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -32,7 +31,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import model.Conversation;
 import model.ConversationServiceConnectivity;
@@ -45,9 +43,10 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     private TableLayout tableLayout;
     private ConversationServiceConnectivity c;
     public static String chosenConvoKey;
+    public static String chosenGroupName;
     private ProgressDialog pDialog;
+    private Toolbar toolbar;
     private ArrayList<Conversation> conversations;
-    Toolbar toolbar;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +56,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
         chosenConvoKey = "";
+        chosenGroupName = "";
 
         tableLayout = (TableLayout) findViewById(R.id.convos_stu);
         tableLayout.setVerticalScrollBarEnabled(true);
@@ -101,6 +101,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
+                saveKey("", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
                 finish();
@@ -213,8 +214,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                                        }
                                                    }
                                                }
-                                               for (int i = 0; i < convos.size(); i++)
-                                               {
+                                               for (int i = 0; i < convos.size(); i++) {
                                                    final TableRow tableRow = new TableRow(getApplicationContext());
                                                    tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
                                                    tableRow.setBackgroundResource(R.drawable.corners);
@@ -236,6 +236,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                                        public void onClick(View v) {
                                                            saveKey(convos.get(f).getKey(), getApplicationContext());
                                                            chosenConvoKey = retrieveKey();
+                                                           chosenGroupName = convos.get(f).getConversationName();
                                                            Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
                                                            startActivity(i);
                                                        }
@@ -255,13 +256,12 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
                                        }
 
-                                       public void onSuccess(String result){
+                                       public void onSuccess(String result) {
 
                                        }
 
                                        @Override
-                                       public void onError(VolleyError error)
-                                       {
+                                       public void onError(VolleyError error) {
                                            Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                                        }
                                    }

@@ -68,102 +68,101 @@ public class CreateGroupActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final ArrayList<String> allKeys = new ArrayList<>();
                 if (createGroup.getText().toString().equalsIgnoreCase("Create Group")) {
+                    if(!groupName.getText().toString().equalsIgnoreCase("") && !enrolmentKey.getText().toString().equalsIgnoreCase("")) {
+                        convo.getExistingConversations(new ServerCallback() {
 
-                    convo.getExistingConversations(new ServerCallback() {
+                            @Override
+                            public void onSuccess(JSONObject result) {
+                            }
 
-                        @Override
-                        public void onSuccess(JSONObject result) {
-                        }
+                            @Override
+                            public void onSuccess(JSONArray result) {
+                                boolean keyExists = false;
+                                for (int i = 0; i < result.length(); i++) {
+                                    try {
+                                        JSONObject res = (JSONObject) result.get(i);
+                                        String key = res.getString("Key");
+                                        allKeys.add(key);
+                                    } catch (JSONException r) {
+                                        System.out.println(r.getMessage());
+                                    }
+                                }
 
-                        @Override
-                        public void onSuccess(JSONArray result) {
-                            boolean keyExists = false;
-                            for (int i = 0; i < result.length(); i++) {
-                                try {
-                                    JSONObject res = (JSONObject) result.get(i);
-                                    String key = res.getString("Key");
-                                    allKeys.add(key);
-                                } catch (JSONException r) {
-                                    System.out.println(r.getMessage());
+                                for (int i = 0; i < allKeys.size(); i++) {
+                                    if (enrolmentKey.getText().toString().trim().equalsIgnoreCase(allKeys.get(i))) {
+                                        keyExists = true;
+                                    }
+                                }
+                                if (keyExists) {
+                                    Toast.makeText(getApplicationContext(), "Key already exists. Please choose a different key", Toast.LENGTH_LONG).show();
+                                }
+                                if (!keyExists) {
+                                    final String key = enrolmentKey.getText().toString().trim();
+                                    final String gName = groupName.getText().toString().trim();
+                                    convo.CreateConversation(new ServerCallback() {
+                                        @Override
+                                        public void onSuccess(JSONObject result) {
+                                            Toast.makeText(getApplicationContext(), "Successfully created group", Toast.LENGTH_LONG).show();
+
+
+                                            ((ViewManager) createGroup.getParent()).removeView(groupName);
+                                            ((ViewManager) createGroup.getParent()).removeView(enrolmentKey);
+                                            ((ViewManager) createGroup.getParent()).removeView(keyName);
+                                            showKey.setText(key);
+                                            createGroup.setText("OK");
+                                            textView.setText("Conversation Key:");
+                                            textView.setPadding(0, 20, 0, 0);
+
+                                            //groupKey = key;
+
+                                            convo.AddUserIntoConversation(new ServerCallback() {
+                                                @Override
+                                                public void onSuccess(JSONObject result) {
+                                                    Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
+                                                }
+
+                                                @Override
+                                                public void onSuccess(JSONArray result) {
+                                                }
+
+                                                @Override
+                                                public void onSuccess(String result) {
+                                                }
+
+                                                @Override
+                                                public void onError(VolleyError error) {
+                                                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                                }
+                                            }, key, LogInActivity.loggedInUser, LogInActivity.password, String.valueOf(LogInActivity.loggedInUserType));
+                                        }
+
+                                        @Override
+                                        public void onSuccess(JSONArray result) {
+
+                                        }
+
+                                        @Override
+                                        public void onSuccess(String result) {
+
+                                        }
+
+                                        @Override
+                                        public void onError(VolleyError error) {
+                                            Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                        }
+                                    }, key, gName, LogInActivity.loggedInUser);
                                 }
                             }
 
-                            for(int i = 0; i < allKeys.size(); i++) {
-                                if (enrolmentKey.getText().toString().trim().equalsIgnoreCase(allKeys.get(i))) {
-                                    keyExists = true;
-                                }
+                            @Override
+                            public void onSuccess(String result) {
                             }
-                            if(keyExists)
-                            {
-                                Toast.makeText(getApplicationContext(), "Key already exists. Please choose a different key", Toast.LENGTH_LONG).show();
+
+                            @Override
+                            public void onError(VolleyError error) {
                             }
-                            if(keyExists == false)
-                            {
-                                final String key = enrolmentKey.getText().toString().trim();
-                                final String gName = groupName.getText().toString().trim();
-                                convo.CreateConversation(new ServerCallback() {
-                                    @Override
-                                    public void onSuccess(JSONObject result) {
-                                        Toast.makeText(getApplicationContext(), "Successfully created group", Toast.LENGTH_LONG).show();
-
-
-                                        ((ViewManager) createGroup.getParent()).removeView(groupName);
-                                        ((ViewManager) createGroup.getParent()).removeView(enrolmentKey);
-                                        ((ViewManager) createGroup.getParent()).removeView(keyName);
-                                        showKey.setText(key);
-                                        createGroup.setText("OK");
-                                        textView.setText("Conversation Key:");
-                                        textView.setPadding(0, 20, 0, 0);
-
-                                        //groupKey = key;
-
-                                        convo.AddUserIntoConversation(new ServerCallback() {
-                                            @Override
-                                            public void onSuccess(JSONObject result) {
-                                                Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
-                                            }
-
-                                            @Override
-                                            public void onSuccess(JSONArray result) {
-                                            }
-
-                                            @Override
-                                            public void onSuccess(String result) {
-                                            }
-
-                                            @Override
-                                            public void onError(VolleyError error) {
-                                                Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
-                                            }
-                                        }, key, LogInActivity.loggedInUser, LogInActivity.password, String.valueOf(LogInActivity.loggedInUserType));
-                                    }
-
-                                    @Override
-                                    public void onSuccess(JSONArray result) {
-
-                                    }
-
-                                    @Override
-                                    public void onSuccess(String result) {
-
-                                    }
-
-                                    @Override
-                                    public void onError(VolleyError error) {
-                                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
-                                    }
-                                }, key, gName, LogInActivity.loggedInUser);
-                            }
-                        }
-
-                        @Override
-                        public void onSuccess(String result) {
-                        }
-
-                        @Override
-                        public void onError(VolleyError error) {
-                        }
-                    });
+                        });
+                    }
 
                 } else if (createGroup.getText().toString().equalsIgnoreCase("OK")) {
                     //DISPLAY NEXT SCREEN
