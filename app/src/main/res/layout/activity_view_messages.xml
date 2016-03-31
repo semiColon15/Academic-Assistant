@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <include
+        layout="@layout/toolbar"
+        android:id="@+id/tool2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:layout_below="@+id/tool2"
+        android:paddingTop="15dp"
+        android:id="@+id/scroll"
+        android:scrollbars="vertical"
+        android:orientation="vertical">
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:id="@+id/table"
+                android:textStyle="bold"
+                android:background="@color/background"
+                android:scrollbars="vertical"
+                android:columnCount="2">
+            </TableLayout>
+    </ScrollView>
+
+    <Button
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:text="Send Message"
+        android:textColor="@color/white"
+        android:background="@color/blueGrey"
+        android:id="@+id/sendButton"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/messageText"
+        android:layout_above="@+id/sendButton"
+        android:inputType="textCapSentences"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
