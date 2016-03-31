@@ -102,12 +102,12 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             case R.id.miCreateGroup:
                 Intent f = new Intent(getApplicationContext(), CreateGroupActivity.class);
                 startActivity(f);
-                //finish();
+                finish();
                 return true;
             case R.id.miJoinGroup:
                 Intent l = new Intent(getApplicationContext(), JoinGroupActivity.class);
                 startActivity(l);
-                //finish();
+                finish();
                 return true;
             case R.id.miLogout:
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
@@ -284,7 +284,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     {
         LayoutInflater inflater = (LayoutInflater) ChooseConversationLecturerActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View layout = inflater.inflate(R.layout.activity_message_info_popup,
+        View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
         final PopupWindow pwindo = new PopupWindow(layout, 470, 850, true);
 
@@ -293,13 +293,23 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
 
-        Button closePopup = (Button) layout.findViewById(R.id.okButton_info);
+        TextView loggedIn = (TextView) pwindo.getContentView().findViewById(R.id.loggedDisplay_info);
+        loggedIn.setText(LogInActivity.loggedInUser);
+        TextView type = (TextView) pwindo.getContentView().findViewById(R.id.typeDisplay_info);
+        if (LogInActivity.loggedInUserType) {
+            type.setText("Lecturer");
+        } else {
+            type.setText("Student");
+        }
+
+        Button closePopup = (Button) layout.findViewById(R.id.okButtonlog_info);
         closePopup.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 pwindo.dismiss();
             }
 
         });
+        buttonEffect(closePopup);
     }
 
 

@@ -80,6 +80,47 @@ public class ConversationServiceConnectivity {
         mRequestQueue.add(req);
     }
 
+    public void getConversation(final ServerCallback callback, String key)
+    {
+        String url = "Conversations/GetConversation?key="+key;
+        String Url = baseUrl + url;
+        showpDialog();
+        pDialog.setMessage("Gathering Information...");
+
+        JsonObjectRequest req = new JsonObjectRequest(Url,null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, response.toString());
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        mRequestQueue.add(req);
+    }
+
     public void getConversationsForUser(final ServerCallback callback, String email)
     {
         String url = "Conversations/GetConversationForUser?email="+email;

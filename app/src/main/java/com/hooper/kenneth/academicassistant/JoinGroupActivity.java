@@ -121,6 +121,20 @@ public class JoinGroupActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed()
+    {
+        if(LogInActivity.loggedInUserType) {
+            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+            startActivity(t);
+            finish();
+        } else {
+            Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+            startActivity(t);
+            finish();
+        }
+    }
+
     public static void buttonEffect(View button){
         button.setOnTouchListener(new View.OnTouchListener() {
 

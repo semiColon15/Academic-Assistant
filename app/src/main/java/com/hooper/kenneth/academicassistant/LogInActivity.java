@@ -198,6 +198,7 @@ public class LogInActivity extends AppCompatActivity {
                                                     savePassword("password.txt", password, getApplicationContext());
                                                     saveLoggedInUser("loggedInUser.txt", loggedInUser.trim(), getApplicationContext());
                                                     saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
+                                                    loggedInUserType = Boolean.valueOf(adminLevel_);
 
                                                     if (Boolean.valueOf(adminLevel_)) {
                                                         Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);

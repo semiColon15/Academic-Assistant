@@ -4,16 +4,21 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -32,9 +37,10 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText emailAddress;
     private EditText password;
     private EditText confirmPassword;
-    private Switch admin;
+    private boolean isAdminLevel;
 
     private ProgressDialog pDialog;
+    private Toolbar toolbar;
 
     private UserServiceConnectivity userServiceConnectivity;
 
@@ -47,26 +53,25 @@ public class SignUpActivity extends AppCompatActivity {
         emailAddress = (EditText) findViewById(R.id.emailInput);
         password = (EditText) findViewById(R.id.passwordInput);
         confirmPassword = (EditText) findViewById(R.id.passwordInput2);
-        admin = (Switch) findViewById(R.id.switch1);
         Button signUp = (Button) findViewById(R.id.createAccountButton);
+        buttonEffect(signUp);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Display icon in the toolbar
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        mTitle.setText("Sign Up");
+        mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
         pDialog = new ProgressDialog(this);
 
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext(), pDialog);
 
-        admin.setChecked(false);
-        admin.setText("Student");
-
-        admin.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    admin.setText("Lecturer");
-                } else {
-                    admin.setText("Student");
-                }
-            }
-        });
 
         signUp.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -107,14 +112,7 @@ public class SignUpActivity extends AppCompatActivity {
                 });
 
                 if(performLocalChecks()) {
-                    boolean isAdminLevel;
-                    if(admin.isChecked()) {
-                        isAdminLevel = true;
-                    }
-                    else {
-                        isAdminLevel = false;
-                    }
-                    final User user = new User(emailAddress.getText().toString(), password.getText().toString(), confirmPassword.getText().toString(), isAdminLevel);
+                    final User user = new User(emailAddress.getText().toString().trim(), password.getText().toString().trim(), confirmPassword.getText().toString().trim(), isAdminLevel);
 
                     //TODO CHECK USER IS REGISTERED BEFORE PROCEEDING    I.E. THAT INTERNET CONNECTION EXISTS
 
@@ -151,9 +149,16 @@ public class SignUpActivity extends AppCompatActivity {
                                                     VolleyLog.v("Response:%n %s", response);
                                                     Toast.makeText(getApplicationContext(), "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
 
-                                                    Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                                                    startActivity(i);
-                                                    finish();
+                                                    if(isAdminLevel) {
+                                                        Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                        startActivity(i);
+                                                        finish();
+                                                    } else
+                                                    {
+                                                        Intent i = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                                        startActivity(i);
+                                                        finish();
+                                                    }
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -216,6 +221,44 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.radio_stu:
+                if (checked)
+                    isAdminLevel = false;
+                    break;
+            case R.id.radio_lect:
+                if (checked)
+                    isAdminLevel = true;
+                    break;
+        }
+    }
+
+    public static void buttonEffect(View button){
+        button.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        v.getBackground().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
+                        v.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
     public boolean performLocalChecks()
     {
         boolean isValid = true;
@@ -265,7 +308,7 @@ public class SignUpActivity extends AppCompatActivity {
         boolean containsNum = false;
         boolean containsNonLetterOrDigit = false;
 
-        char[] passwordChar = password.getText().toString().toCharArray();
+        char[] passwordChar = password.getText().toString().trim().toCharArray();
 
         if (passwordChar.length < 6)
         {

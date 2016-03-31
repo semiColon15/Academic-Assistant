@@ -7,7 +7,7 @@
 
     <include
         layout="@layout/toolbar"
-        android:id="@+id/tool5"
+        android:id="@+id/tool_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
@@ -18,16 +18,16 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Group Name:"
         android:id="@+id/groupName_info"
-        android:layout_below="@+id/tool5"
+        android:layout_below="@+id/tool_info"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="45dp" />
+        android:layout_marginTop="20dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="name"
+        android:text=""
         android:id="@+id/nameDisplay_info"
         android:layout_alignTop="@+id/groupName_info"
         android:layout_toRightOf="@+id/groupName_info"
@@ -46,13 +46,13 @@
         android:layout_below="@+id/groupName_info"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="45dp" />
+        android:layout_marginTop="20dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="key"
+        android:text=""
         android:id="@+id/keyDisplay_info"
         android:textColor="#000000"
         android:layout_alignTop="@+id/groupKey_info"
@@ -62,18 +62,41 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Members"
         android:paddingLeft="10dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Group Admin:"
+        android:id="@+id/groupAdmin_info"
         android:layout_below="@+id/keyDisplay_info"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:id="@+id/adminDisplay_info"
+        android:textColor="#000000"
+        android:layout_alignTop="@+id/groupAdmin_info"
+        android:layout_alignLeft="@+id/nameDisplay_info"
+        android:layout_alignStart="@+id/nameDisplay_info" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Members:"
+        android:paddingLeft="10dp"
+        android:layout_below="@+id/adminDisplay_info"
         android:id="@+id/memberList_info"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="45dp"/>
+        android:layout_marginTop="20dp"/>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="220dp"
+        android:layout_height="200dp"
         android:layout_below="@+id/memberList_info"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
@@ -86,7 +109,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#000000"
-            android:id="@+id/convos"
+            android:id="@+id/convos2"
             android:gravity="center"
             android:layout_gravity="center_horizontal">
         </TableLayout>

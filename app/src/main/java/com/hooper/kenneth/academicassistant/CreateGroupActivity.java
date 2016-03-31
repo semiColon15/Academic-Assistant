@@ -173,6 +173,22 @@ public class CreateGroupActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if(LogInActivity.loggedInUserType) {
+            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+            startActivity(t);
+            finish();
+        } else {
+            Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+            startActivity(t);
+            finish();
+        }
     }
 
     @Override

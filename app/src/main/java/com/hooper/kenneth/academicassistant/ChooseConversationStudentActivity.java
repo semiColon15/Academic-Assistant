@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -88,18 +93,17 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.miInfo_stu:
-                //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
-                //startActivity(i);
-                //finish();
+                openPopUpWindow();
                 return true;
             case R.id.miJoinGroup_stu:
                 Intent l = new Intent(getApplicationContext(), JoinGroupActivity.class);
                 startActivity(l);
-                //finish();
+                finish();
                 return true;
             case R.id.miLogout_stu:
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
+                LogInActivity.saveLoggedInUserType("loggedInUserType.txt", false, getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
@@ -267,6 +271,39 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                    }
         );
     }
+
+    public void openPopUpWindow()
+    {
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
+                (ViewGroup) findViewById(R.id.glayout1));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 850, true);
+
+
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        TextView loggedIn = (TextView) pwindo.getContentView().findViewById(R.id.loggedDisplay_info);
+        loggedIn.setText(LogInActivity.loggedInUser);
+        TextView type = (TextView) pwindo.getContentView().findViewById(R.id.typeDisplay_info);
+        if (LogInActivity.loggedInUserType) {
+            type.setText("Lecturer");
+        } else {
+            type.setText("Student");
+        }
+
+        Button closePopup = (Button) layout.findViewById(R.id.okButtonlog_info);
+        closePopup.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+
+        });
+        buttonEffect(closePopup);
+    }
+
 
     public static void saveKey(String key, Context ctx)
     {

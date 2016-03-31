@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="470dp"
+    android:layout_height="850dp"
+    android:background="#CFD8DC"
+    android:id="@+id/glayout1">
+
+    <include
+        layout="@layout/toolbar"
+        android:id="@+id/tool_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Logged in as:"
+        android:id="@+id/loggedIn_info"
+        android:layout_below="@+id/tool_info"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:id="@+id/loggedDisplay_info"
+        android:layout_alignTop="@+id/loggedIn_info"
+        android:layout_toRightOf="@+id/loggedIn_info"
+        android:layout_toEndOf="@+id/loggedIn_info"
+        android:textColor="#000000"
+        android:layout_marginLeft="45dp"
+        android:layout_marginStart="45dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Account Type:"
+        android:paddingLeft="10dp"
+        android:paddingStart="10dp"
+        android:id="@+id/type_info"
+        android:layout_below="@+id/loggedDisplay_info"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:id="@+id/typeDisplay_info"
+        android:textColor="#000000"
+        android:layout_alignTop="@+id/type_info"
+        android:layout_alignLeft="@+id/loggedDisplay_info"
+        android:layout_alignStart="@+id/loggedDisplay_info" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OK"
+        android:id="@+id/okButtonlog_info"
+        android:layout_below="@+id/type_info"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:background="@color/blueGrey"/>
+
+</RelativeLayout>
