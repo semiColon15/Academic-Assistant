@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,9 +17,11 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -44,8 +47,14 @@ public class ViewMessagesActivity extends AppCompatActivity {
     private String keyConvo;
     private String nameConvo;
     private String groupAdmin;
+    /*private String[] allSenders;
+    private String[] allMessages;*/
+    private ArrayList<String> allSenders;
+    private ArrayList<String> allMessages;
+    private ArrayList<Integer> allMessageIDs;
     private ArrayList<String> userList;
     private ConversationServiceConnectivity c;
+    private ArrayList<TableRow> highlightedRows;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +84,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
 
-
+        highlightedRows = new ArrayList<>();
 
         scrollView = (ScrollView) findViewById(R.id.scroll);
 
@@ -114,19 +123,191 @@ public class ViewMessagesActivity extends AppCompatActivity {
             }
         });
 
-        connectivity = new MessageServiceConnectivity(getApplicationContext(), this, pDialog, tableLayout);
+        connectivity = new MessageServiceConnectivity(getApplicationContext(), pDialog);
+        connectivity.setInitialViews(new ServerCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+
+            }
+
+            @Override
+            public void onSuccess(JSONArray response) {
+                try {
+                    /*allSenders = new String[response.length()];
+                    allMessages = new String[response.length()];
+                    allMessageIDs = new int[response.length()];*/
+                    allSenders = new ArrayList<>();
+                    allMessages = new ArrayList<>();
+                    allMessageIDs = new ArrayList<>();
+                    for (int i = 0; i < response.length(); i++) {
+
+                        JSONObject message = (JSONObject) response.get(i);
+                        String key = message.getString("ConversationKey");
+                        String type;
+                        if(LogInActivity.loggedInUserType)
+                        {
+                            type = ChooseConversationLecturerActivity.chosenConvoKey;
+                        }
+                        else
+                        {
+                            type = ChooseConversationStudentActivity.chosenConvoKey;
+                        }
+                        if (key.equalsIgnoreCase(type))
+                        {
+                            String sender = message.getString("Sender");
+                            String message_ = message.getString("MessageContent");
+                            int messageID = message.getInt("MessageID");
+                            allSenders.add(sender);
+                            allMessages.add(message_);
+                            allMessageIDs.add(messageID);
+                        }
+                    }
+                    setInitialViews();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+
+            }
+        });
 
         sendButton.setOnClickListener(new View.OnClickListener() {
                                           public void onClick(View v) {
                                               if(!messageText.getText().toString().equalsIgnoreCase("")){
 
                                                   if(LogInActivity.loggedInUserType) {
-                                                      connectivity.SendMessage(messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, keyConvo);
+                                                      connectivity.SendMessage(new ServerCallback() {
+                                                          @Override
+                                                          public void onSuccess(JSONObject result) {
+                                                              connectivity.setViews(new ServerCallback() {
+                                                                  @Override
+                                                                  public void onSuccess(JSONObject result) {
+
+                                                                  }
+
+                                                                  @Override
+                                                                  public void onSuccess(JSONArray result) {
+                                                                      try {
+                                                                          String jsonResponse = "";
+                                                                          String senderText = "";
+                                                                          String contentText = "";
+                                                                          for (int i = 0; i < result.length(); i++) {
+
+                                                                              JSONObject message = (JSONObject) result.get(i);
+
+                                                                              String content = message.getString("messageContent");
+                                                                              String sender = message.getString("sender");
+
+                                                                              senderText += sender + ":\n";
+                                                                              contentText += content + "\n";
+                                                                          }
+
+                                                                      } catch (JSONException e) {
+                                                                          e.printStackTrace();
+                                                                      }
+                                                                  }
+
+                                                                  @Override
+                                                                  public void onSuccess(String result) {
+
+                                                                  }
+
+                                                                  @Override
+                                                                  public void onError(VolleyError error) {
+
+                                                                  }
+                                                              });
+                                                          }
+
+                                                          @Override
+                                                          public void onSuccess(JSONArray result) {
+
+                                                          }
+
+                                                          @Override
+                                                          public void onSuccess(String result) {
+
+                                                          }
+
+                                                          @Override
+                                                          public void onError(VolleyError error) {
+
+                                                          }
+                                                      }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, keyConvo);
                                                   }
-                                                  else
+                                                  /*else
                                                   {
-                                                      connectivity.SendMessage(messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, keyConvo);
-                                                  }
+                                                      connectivity.SendMessage(new ServerCallback() {
+                                                          @Override
+                                                          public void onSuccess(JSONObject result) {
+
+                                                          }
+
+                                                          @Override
+                                                          public void onSuccess(JSONArray result) {
+                                                              connectivity.setViews(new ServerCallback() {
+                                                                  @Override
+                                                                  public void onSuccess(JSONObject result) {
+
+                                                                  }
+
+                                                                  @Override
+                                                                  public void onSuccess(JSONArray result) {
+                                                                      try {
+                                                                          String jsonResponse = "";
+                                                                          String senderText = "";
+                                                                          String contentText = "";
+                                                                          for (int i = 0; i < result.length(); i++) {
+
+                                                                              JSONObject message = (JSONObject) result.get(i);
+
+
+                                                                              String content = message.getString("messageContent");
+                                                                              String sender = message.getString("sender");
+
+                                                                              senderText += sender + ":\n";
+                                                                              contentText += content + "\n";
+                                                                          }
+
+                                                                      } catch (JSONException e) {
+                                                                          e.printStackTrace();
+                                                                      }
+                                                                  }
+
+                                                                  @Override
+                                                                  public void onSuccess(String result) {
+
+                                                                  }
+
+                                                                  @Override
+                                                                  public void onError(VolleyError error) {
+
+                                                                  }
+                                                              });
+                                                          }*
+
+                                                          @Override
+                                                          public void onSuccess(String result) {
+
+                                                          }
+
+                                                          @Override
+                                                          public void onError(VolleyError error) {
+
+                                                          }
+                                                      }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, keyConvo);
+                                                  }*/
                                                   final TableRow tableRow = new TableRow(getApplicationContext());
                                                   tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
                                                   tableRow.setBackgroundResource(R.drawable.bubble_green);
@@ -139,8 +320,11 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   final TextView sender = new TextView(getApplicationContext());
                                                   sender.setText(LogInActivity.loggedInUser + "\t");
                                                   sender.setPadding(0, 0, 10, 0);
-                                                  sender.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.09f));
+                                                  sender.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                                                   sender.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+
+                                                  tableRow.setLongClickable(true);
+                                                  tableRow.setGravity(Gravity.CENTER);
 
                                                   tableRow.addView(sender);
                                                   tableRow.addView(message);
@@ -155,10 +339,239 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   {
                                                       ChooseConversationStudentActivity.saveKey("", getApplicationContext());
                                                   }
+
+                                                  tableRow.setOnLongClickListener(new View.OnLongClickListener() {
+                                                      @Override
+                                                      public boolean onLongClick(View v) {
+                                                          highlightRow(tableRow);
+                                                          return true;
+                                                      }
+                                                  });
                                               }
                                           }
                                       }
         );
+    }
+
+    public void setInitialViews()
+    {
+        for (int i = 0; i < allMessages.size(); i++) {
+            if(allSenders != null){
+
+                final TableRow tableRow = new TableRow(getApplicationContext());
+                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                if(allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                    tableRow.setBackgroundResource(R.drawable.bubble_green);
+                }
+                else
+                {
+                    tableRow.setBackgroundResource(R.drawable.bubble_yellow);
+                }
+
+                final TextView senderInitial = new TextView(getApplicationContext());
+                senderInitial.setText(allSenders.get(i));
+                senderInitial.setPadding(0, 0, 10, 0);
+                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+
+                final TextView messageInitial = new TextView(getApplicationContext());
+                messageInitial.setText(allMessages.get(i));
+                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+                messageInitial.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
+
+                tableRow.setLongClickable(true);
+                tableRow.setGravity(Gravity.CENTER);
+
+                tableRow.addView(senderInitial);
+                tableRow.addView(messageInitial);
+
+                tableLayout.addView(tableRow);
+
+                tableRow.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        for(int g =0; g < allMessages.size();g++) {
+                            if(v == tableLayout.getChildAt(g)) {
+                                highlightRow(tableRow);
+                                deletePos = g;
+                                System.out.println("DELTE POS =  " + deletePos);
+                                return true;
+                            }
+                        }
+                        return true;
+                    }
+                });
+            }
+        }
+    }
+
+    ImageView deleteIcon;
+    int deletePos;
+    public void highlightRow(final TableRow row)
+    {
+        if(highlightedRows != null) {
+            if(highlightedRows.size() < 1) {
+
+                row.setBackgroundColor(getResources().getColor(R.color.highlight));
+                highlightedRows.add(row);
+
+                deleteIcon = new ImageView(this);
+                deleteIcon.setImageResource(R.drawable.ic_delete_black_24dp);
+                deleteIcon.setPadding(20, 0, 0, 0);
+                deleteIcon.setClickable(true);
+                row.addView(deleteIcon);
+
+                wasHighlighted = true;
+
+                deleteIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        c.getConversation(new ServerCallback() {
+                            @Override
+                            public void onSuccess(JSONObject result) {
+                                userList = new ArrayList<>();
+                                try {
+                                    groupAdmin = result.getString("Administrator");
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+
+                                System.out.print("ADMIN" + groupAdmin + "END");
+                                System.out.print("LOGGED IN" + LogInActivity.loggedInUser + "END");
+
+                                //CHECKS FOR ADMIN DELETE ACCESS GO HERE
+                                if(LogInActivity.loggedInUser.equalsIgnoreCase(groupAdmin)) {
+                                    openPopUpDeleteWindow();
+                                }
+                                else {
+                                    if(LogInActivity.loggedInUser.equalsIgnoreCase(((TextView)((TableRow) tableLayout.getChildAt(deletePos)).getChildAt(0)).getText().toString())) // == user on that row
+                                    {
+                                        openPopUpDeleteWindow();
+                                    }
+                                    else
+                                    {
+                                        Toast.makeText(getApplicationContext(), "You do not have permission to delete this message.", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onSuccess(JSONArray result) {
+                            }
+
+                            @Override
+                            public void onSuccess(String result) {
+                            }
+
+                            @Override
+                            public void onError(VolleyError error) {
+                            }
+                        }, keyConvo);
+                    }
+                });
+
+                numPressed = 0;
+            }
+        }
+    }
+
+    public void openPopUpDeleteWindow()
+    {
+        LayoutInflater inflater = (LayoutInflater) ViewMessagesActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
+                (ViewGroup) findViewById(R.id.glayout2));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        TextView text = (TextView) layout.findViewById(R.id.question_info);
+        text.setText("Are you sure you want to delete this message?");
+
+        final Button confirmDelete = (Button) layout.findViewById(R.id.delete_info);
+        buttonEffect(confirmDelete);
+        confirmDelete.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+
+                connectivity.deleteMessage(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                        Toast.makeText(getApplicationContext(), "Message Deleted", Toast.LENGTH_LONG).show();
+                        Intent f = new Intent(getApplicationContext(), ViewMessagesActivity.class);
+                        startActivity(f);
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+
+                    }
+                }, allMessageIDs.get(deletePos));
+
+
+                pwindo.dismiss();
+            }
+        });
+
+        Button cancelDelete = (Button) layout.findViewById(R.id.cancel_info);
+        cancelDelete.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+        });
+        buttonEffect(cancelDelete);
+    }
+
+    int numPressed = 0;
+    boolean wasHighlighted = false;
+
+    @Override
+    public void onBackPressed()
+    {
+        numPressed++;
+        if(numPressed == 1 && wasHighlighted) {
+            View view = tableLayout.getChildAt(deletePos);
+            if (view instanceof TableRow) {
+                TableRow row = (TableRow) view;
+                if(((TextView)((TableRow) tableLayout.getChildAt(deletePos)).getChildAt(0)).getText().toString().equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                    row.setBackgroundResource(R.drawable.bubble_green);
+                }
+                else
+                {
+                    row.setBackgroundResource(R.drawable.bubble_yellow);
+                }
+                deleteIcon.setClickable(false);
+                ((ViewManager) row.getParent()).removeView(deleteIcon);
+                //row.setPadding(20, 20, 20, 20);
+                row.setGravity(Gravity.CENTER);
+                row.removeView(deleteIcon);
+            }
+            highlightedRows.clear();
+        }
+        else if(numPressed == 1 && !wasHighlighted)
+        {
+            finish();
+        }
+        else if(numPressed == 2)
+        {
+            finish();
+        }
     }
 
     @Override

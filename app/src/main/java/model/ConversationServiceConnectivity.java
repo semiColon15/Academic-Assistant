@@ -7,12 +7,14 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.hooper.kenneth.academicassistant.LogInActivity;
 import com.hooper.kenneth.academicassistant.SignUpActivity;
@@ -30,7 +32,7 @@ public class ConversationServiceConnectivity {
     private RequestQueue mRequestQueue;
     private ProgressDialog pDialog;
 
-    private String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/";
+    private String baseUrl = "http://academicassistantservice2.azurewebsites.net/api/";
     private static String TAG = SignUpActivity.class.getSimpleName();
 
     public ConversationServiceConnectivity(Context context, ProgressDialog pDialog)
@@ -160,8 +162,6 @@ public class ConversationServiceConnectivity {
         mRequestQueue.add(req);
     }
 
-
-
     public void CreateConversation(final ServerCallback callback, String key, String name, String admin)
     {
         String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/Conversations/PostConversation?";
@@ -254,6 +254,129 @@ public class ConversationServiceConnectivity {
 
         mRequestQueue.add(req);
     }
+
+    public void deleteConversation(final ServerCallback callback, String key)
+    {
+        String url = "Conversations/DeleteConversation?key="+key;
+        String Url = baseUrl + url;
+        showpDialog();
+
+        StringRequest req = new StringRequest(Request.Method.DELETE, Url,
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, response.toString());
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        mRequestQueue.add(req);
+    }
+
+    public void deleteMessagesInConvo(final ServerCallback callback, int id)
+    {
+        String url = "Messages/DeleteMessage?id="+id;
+        String Url = baseUrl + url;
+        showpDialog();
+
+        StringRequest req = new StringRequest(Request.Method.DELETE, Url,
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, response.toString());
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        mRequestQueue.add(req);
+    }
+
+    public void RemoveUserFromGroup(final ServerCallback callback, String key, User user)
+    {
+        String url = "Conversations/RemoveUserFromGroup?key="+key;
+        String Url = baseUrl + url;
+        HashMap<String, String> params = new HashMap<>();
+        params.put("Email", user.getEmail());
+        params.put("Password", user.getPassword());
+        params.put("Admin", Boolean.toString(user.getAdminUser()));
+        pDialog.setMessage("Leaving Group...");
+        showpDialog();
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, Url, new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, response.toString());
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        mRequestQueue.add(req);
+    }
+
 
     private void showpDialog() {
         if (!pDialog.isShowing())

@@ -3,13 +3,23 @@ package model;
 import java.util.Map;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewManager;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -17,6 +27,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.hooper.kenneth.academicassistant.ChooseConversationLecturerActivity;
 import com.hooper.kenneth.academicassistant.ChooseConversationStudentActivity;
@@ -32,68 +43,24 @@ import java.util.HashMap;
 
 public class MessageServiceConnectivity {
 
-    private ViewMessagesActivity sInstance;
     private RequestQueue mRequestQueue;
-    private String[] allSenders;
-    private String[] allMessages;
     private ProgressDialog pDialog;
     private Context context;
-    private TableLayout tableLayout;
-
-    UserServiceConnectivity userServiceConnectivity;
 
     private static String TAG = ViewMessagesActivity.class.getSimpleName();
     final String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/";
 
-    public MessageServiceConnectivity(Context c, ViewMessagesActivity vma, ProgressDialog pDialog, TableLayout tableLayout)
+    public MessageServiceConnectivity(Context c, ProgressDialog pDialog)
     {
         context = c;
-        sInstance = vma;
         this.pDialog = pDialog;
         mRequestQueue = Volley.newRequestQueue(c);
-        setAllSendersAndAllMessages();
-        this.tableLayout = tableLayout;
-        userServiceConnectivity = new UserServiceConnectivity(context, pDialog);
     }
 
-    public void setInitialViews()
+
+    public void setInitialViews(final ServerCallback callback)
     {
-        for (int i = 0; i < allMessages.length; i++) {
-            if(allSenders[i] != null){
-
-                final TableRow tableRow = new TableRow(context);
-                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
-
-                if(allSenders[i].equalsIgnoreCase(LogInActivity.loggedInUser)) {
-                    tableRow.setBackgroundResource(R.drawable.bubble_green);
-                }
-                else
-                {
-                    tableRow.setBackgroundResource(R.drawable.bubble_yellow);
-                }
-
-                final TextView senderInitial = new TextView(context);
-                senderInitial.setText(allSenders[i] + "\t");
-                senderInitial.setPadding(0, 0, 10, 0);
-                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                senderInitial.setTextAppearance(context, R.style.senderTextStyle);
-
-                final TextView messageInitial = new TextView(context);
-                messageInitial.setText(allMessages[i]);
-                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
-                messageInitial.setTextAppearance(context, R.style.messageTextStyle);
-
-                tableRow.addView(senderInitial);
-                tableRow.addView(messageInitial);
-
-                tableLayout.addView(tableRow);
-                sInstance.addRow(tableRow);
-            }
-        }
-    }
-
-    public void setAllSendersAndAllMessages()
-    {
+        //IF TIME FIX THIS TO RETURN MESSAGES ONLY IN A SPECIFIED GROUP IN SERVICE
         String url = "Messages/GetMessages";
         showpDialog();
         String Url = baseUrl + url;
@@ -104,41 +71,9 @@ public class MessageServiceConnectivity {
 
                     @Override
                     public void onResponse(JSONArray response) {
+
+                        callback.onSuccess(response);
                         Log.d(TAG, response.toString());
-
-                        try {
-                            allSenders = new String[response.length()];
-                            allMessages = new String[response.length()];
-                            for (int i = 0; i < response.length(); i++) {
-
-                                JSONObject message = (JSONObject) response.get(i);
-                                String key = message.getString("ConversationKey");
-                                /*System.out.println("Conversation KEY: *&*&*&*&*& " + key);
-                                System.out.println("Conversation saved key" + ChooseConversationLecturerActivity.chosenConvoKey);*/
-                                String type;
-                                if(LogInActivity.loggedInUserType)
-                                {
-                                    type = ChooseConversationLecturerActivity.chosenConvoKey;
-                                }
-                                else
-                                {
-                                    type = ChooseConversationStudentActivity.chosenConvoKey;
-                                }
-                                if (key.equalsIgnoreCase(type))
-                                {
-                                    allSenders[i] = message.getString("Sender");
-                                    //System.out.println("SETTING SENDER " + allSenders[i]);
-                                    allMessages[i] = message.getString("MessageContent");
-                                    //System.out.println("SETTING MEssage " + allMessages[i]);
-                                }
-                            }
-                            setInitialViews();
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-
                         hidepDialog();
                     }
                 }, new Response.ErrorListener() {
@@ -161,7 +96,7 @@ public class MessageServiceConnectivity {
         mRequestQueue.add(req);
     }
 
-    public void setViews()
+    public void setViews(final ServerCallback callback)
     {
         String url = "Messages/GetMessages";
         String Url = baseUrl + url;
@@ -170,29 +105,10 @@ public class MessageServiceConnectivity {
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
+
+                        callback.onSuccess(response);
                         Log.d(TAG, response.toString());
 
-                        try {
-                            String jsonResponse = "";
-                            String senderText = "";
-                            String contentText = "";
-                            String content = null;
-                            String sender = null;
-                            for (int i = 0; i < response.length(); i++) {
-
-                                JSONObject message = (JSONObject) response
-                                        .get(i);
-
-                                content = message.getString("messageContent");
-                                sender = message.getString("sender");
-
-                                senderText += sender + ":\n";
-                                contentText += content + "\n";
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -224,7 +140,7 @@ public class MessageServiceConnectivity {
             pDialog.dismiss();
     }
 
-    public void SendMessage(String content, String recipient, String sender, String convoKey)
+    public void SendMessage(final ServerCallback callback, String content, String recipient, String sender, String convoKey)
     {
         String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/Messages/PostMessage/?";
         HashMap<String, String> params = new HashMap<>();
@@ -239,9 +155,9 @@ public class MessageServiceConnectivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            callback.onSuccess(response);
                             VolleyLog.v("Response:%n %s", response.toString(4));
                             Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
-                            setViews();
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
@@ -261,6 +177,45 @@ public class MessageServiceConnectivity {
                 return headers;
             }
         };
+
+        mRequestQueue.add(req);
+    }
+
+    public void deleteMessage(final ServerCallback callback, int id)
+    {
+        String url = "Messages/DeleteMessage?id="+id;
+        String Url = baseUrl + url;
+        showpDialog();
+
+        StringRequest req = new StringRequest(Request.Method.DELETE, Url,
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, response.toString());
+
+                        callback.onSuccess(response);
+                        hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         mRequestQueue.add(req);
     }

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="470dp"
+    android:layout_height="450dp"
+    android:background="#CFD8DC"
+    android:id="@+id/glayout2">
+
+    <include
+        layout="@layout/toolbar"
+        android:id="@+id/tool_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Are you sure you want to delete this group?"
+        android:id="@+id/question_info"
+        android:layout_below="@+id/tool_info"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:id="@+id/cancel_info"
+        android:layout_below="@+id/question_info"
+        android:layout_marginTop="40dp"
+        android:textColor="@color/white"
+        android:background="@color/blueGrey"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete"
+        android:id="@+id/delete_info"
+        android:layout_below="@+id/question_info"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="100dp"
+        android:textColor="@color/white"
+        android:background="@color/blueGrey"/>
+
+</RelativeLayout>

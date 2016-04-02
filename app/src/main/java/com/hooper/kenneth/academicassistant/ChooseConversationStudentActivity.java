@@ -16,7 +16,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -42,16 +44,20 @@ import model.ConversationServiceConnectivity;
 import model.Message;
 import model.ServerCallback;
 import model.User;
+import model.UserServiceConnectivity;
 
 public class ChooseConversationStudentActivity extends AppCompatActivity {
 
     private TableLayout tableLayout;
     private ConversationServiceConnectivity c;
+    private UserServiceConnectivity u;
     public static String chosenConvoKey;
     public static String chosenGroupName;
     private ProgressDialog pDialog;
     private Toolbar toolbar;
     private ArrayList<Conversation> conversations;
+    private ArrayList<TableRow> highlightedRows;
+    private ArrayList<Integer> messageIDs;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +65,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
         pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
+        u = new UserServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
         chosenConvoKey = "";
         chosenGroupName = "";
@@ -77,6 +84,8 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
         mTitle.setText("Conversations");
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
+
+        highlightedRows = new ArrayList<>();
 
         fillConvos();
     }
@@ -137,139 +146,490 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     }
 
     public void fillConvos() {
+        c.getConversationsForUser(new ServerCallback() {
+                                      @Override
+                                      public void onSuccess(JSONArray response) {
 
-        c.getExistingConversations(new ServerCallback() {
+                                          conversations = new ArrayList<>();
+                                          final ArrayList<Conversation> convos = new ArrayList<>();
+                                          try {
+                                              for (int i = 0; i < response.length(); i++) {
 
-                                       @Override
-                                       public void onSuccess(JSONArray response) {
+                                                  JSONObject res = (JSONObject) response.get(i);
 
-                                           conversations = new ArrayList<>();
-                                           final ArrayList<Conversation> convos = new ArrayList<Conversation>();
-                                           try {
-                                               for (int i = 0; i < response.length(); i++) {
+                                                  String key;
+                                                  String conversationName;
+                                                  String administrator;
+                                                  ArrayList<User> members = new ArrayList<>();
+                                                  ArrayList<Message> messages = new ArrayList<>();
 
-                                                   JSONObject res = (JSONObject) response.get(i);
+                                                  key = res.getString("Key");
+                                                  conversationName = res.getString("ConversationName");
+                                                  administrator = res.getString("Administrator");
 
-                                                   String key;
-                                                   String conversationName;
-                                                   String administrator;
-                                                   ArrayList<User> members = new ArrayList<>();
-                                                   ArrayList<Message> messages = new ArrayList<>();
+                                                  JSONArray users = res.getJSONArray("Users");
+                                                  if (users != null) {
+                                                      for (int j = 0; j < users.length(); j++) {
+                                                          JSONObject users2 = (JSONObject) users.get(j);
 
-                                                   key = res.getString("Key");
-                                                   conversationName = res.getString("ConversationName");
-                                                   administrator = res.getString("Administrator");
+                                                          String email;
+                                                          String password;
+                                                          boolean admin;
 
-                                                   JSONArray users = res.getJSONArray("Users");
-                                                   if (users != null) {
-                                                       for (int j = 0; j < users.length(); j++) {
-                                                           JSONObject users2 = (JSONObject) users.get(j);
+                                                          email = users2.getString("Email");
+                                                          password = users2.getString("Password");
+                                                          admin = users2.getBoolean("Admin");
 
-                                                           String email;
-                                                           String password;
-                                                           boolean admin;
+                                                          User u = new User(email, password, admin, convos);
 
-                                                           email = users2.getString("Email");
-                                                           password = users2.getString("Password");
-                                                           admin = users2.getBoolean("Admin");
+                                                          members.add(u);
+                                                      }
+                                                  }
 
-                                                           User u = new User(email, password, admin, convos);
+                                                  JSONArray mess = res.getJSONArray("Messages");
+                                                  if (mess != null) {
+                                                      for (int j = 0; j < mess.length(); j++) {
+                                                          JSONObject mess2 = (JSONObject) mess.get(j);
 
-                                                           members.add(u);
-                                                       }
-                                                   }
+                                                          int id;
+                                                          String content;
+                                                          String recipient;
+                                                          String sender;
+                                                          String CKey;
 
-                                                   JSONArray mess = res.getJSONArray("Messages");
-                                                   if (mess != null) {
-                                                       for (int j = 0; j < mess.length(); j++) {
-                                                           JSONObject mess2 = (JSONObject) mess.get(j);
+                                                          id = mess2.getInt("MessageID");
+                                                          content = mess2.getString("MessageContent");
+                                                          recipient = mess2.getString("Recipient");
+                                                          sender = mess2.getString("Sender");
+                                                          CKey = mess2.getString("ConversationKey");
 
-                                                           int id;
-                                                           String content;
-                                                           String recipient;
-                                                           String sender;
-                                                           String CKey;
+                                                          Message u = new Message(id, content, recipient, sender, CKey);
 
-                                                           id = mess2.getInt("MessageID");
-                                                           content = mess2.getString("MessageContent");
-                                                           recipient = mess2.getString("Recipient");
-                                                           sender = mess2.getString("Sender");
-                                                           CKey = mess2.getString("ConversationKey");
-
-                                                           Message u = new Message(id, content, recipient, sender, CKey);
-
-                                                           messages.add(u);
-                                                       }
-                                                   }
+                                                          messages.add(u);
+                                                      }
+                                                  }
 
 
-                                                   Conversation con = new Conversation(key, conversationName, administrator, members, messages);
-                                                   conversations.add(con);
-                                               }
-                                               if (conversations != null) {
-                                                   for (int i = 0; i < conversations.size(); i++) {
-                                                       for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
-                                                           if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser)) {
-                                                               if (convos.contains(conversations.get(i))) {
-                                                               } else {
-                                                                   convos.add(conversations.get(i));
-                                                               }
-                                                           }
-                                                       }
-                                                   }
-                                               }
-                                               for (int i = 0; i < convos.size(); i++) {
-                                                   final TableRow tableRow = new TableRow(getApplicationContext());
-                                                   tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
-                                                   tableRow.setBackgroundResource(R.drawable.corners);
-                                                   tableRow.setPadding(20, 20, 20, 20);
-                                                   tableRow.setGravity(Gravity.CENTER);
+                                                  Conversation con = new Conversation(key, conversationName, administrator, members, messages);
+                                                  conversations.add(con);
+                                              }
+                                              if (conversations != null) {
+                                                  for (int i = 0; i < conversations.size(); i++) {
+                                                      for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
+                                                          if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                                                              if (convos.contains(conversations.get(i))) {
+                                                              } else {
+                                                                  convos.add(conversations.get(i));
+                                                              }
+                                                          }
+                                                      }
+                                                  }
+                                              }
+                                              for (int i = 0; i < convos.size(); i++) {
+                                                  final TableRow tableRow = new TableRow(getApplicationContext());
+                                                  tableRow.setLayoutParams(new TableLayout.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 50));
+                                                  tableRow.setBackgroundResource(R.drawable.corners);
+                                                  tableRow.setPadding(20, 20, 20, 20);
+                                                  tableRow.setGravity(Gravity.CENTER);
 
-                                                   final TextView conv = new TextView(getApplicationContext());
-                                                   conv.setText(convos.get(i).getConversationName());
-                                                   conv.setTextAppearance(getApplicationContext(), R.style.chat);
-                                                   conv.setShadowLayer(10, 3, 3, Color.BLACK);
-                                                   tableRow.setClickable(true);
-                                                   buttonEffect(tableRow);
+                                                  final TextView conv = new TextView(getApplicationContext());
+                                                  conv.setText(convos.get(i).getConversationName());
+                                                  conv.setTextAppearance(getApplicationContext(), R.style.chat);
+                                                  conv.setShadowLayer(10, 3, 3, Color.BLACK);
+                                                  tableRow.setClickable(true);
+                                                  tableRow.setLongClickable(true);
 
-                                                   tableRow.addView(conv);
-                                                   tableLayout.addView(tableRow);
+                                                  buttonEffect(tableRow);
 
-                                                   final int f = i;
-                                                   tableRow.setOnClickListener(new View.OnClickListener() {
-                                                       public void onClick(View v) {
-                                                           saveKey(convos.get(f).getKey(), getApplicationContext());
-                                                           chosenConvoKey = retrieveKey();
-                                                           chosenGroupName = convos.get(f).getConversationName();
-                                                           Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
-                                                           startActivity(i);
-                                                       }
-                                                   });
-                                               }
+                                                  tableRow.addView(conv);
+                                                  tableLayout.addView(tableRow);
 
-                                           } catch (JSONException e) {
-                                               e.printStackTrace();
-                                               Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                           }
+                                                  final int f = i;
 
+                                                  tableRow.setOnLongClickListener(new View.OnLongClickListener() {
+                                                      @Override
+                                                      public boolean onLongClick(View v) {
+                                                          highlightRow(tableRow);
+                                                          return true;
+                                                      }
+                                                  });
 
-                                       }
+                                                  tableRow.setOnClickListener(new View.OnClickListener() {
+                                                      public void onClick(View v) {
 
-                                       @Override
-                                       public void onSuccess(JSONObject result) {
+                                                          saveKey(convos.get(f).getKey(), getApplicationContext());
+                                                          chosenConvoKey = convos.get(f).getKey();
+                                                          chosenGroupName = convos.get(f).getConversationName();
 
-                                       }
+                                                          Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
+                                                          startActivity(i);
+                                                      }
+                                                  });
+                                              }
 
-                                       public void onSuccess(String result) {
+                                          } catch (JSONException e) {
+                                              e.printStackTrace();
+                                              Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                          }
+                                      }
 
-                                       }
+                                      @Override
+                                      public void onSuccess(JSONObject result) {
 
-                                       @Override
-                                       public void onError(VolleyError error) {
-                                           Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
-                                       }
-                                   }
+                                      }
+
+                                      public void onSuccess(String result) {
+
+                                      }
+
+                                      @Override
+                                      public void onError(VolleyError error) {
+                                          Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                      }
+                                  }, LogInActivity.loggedInUser
         );
+    }
+
+    ImageView deleteIcon;
+    ImageView leaveGroupIcon;
+    String admin;
+    String deleteKey;
+    public void highlightRow(final TableRow row)
+    {
+        if(highlightedRows != null) {
+            if(highlightedRows.size() < 1) {
+
+                row.setBackgroundColor(getResources().getColor(R.color.highlight));
+                highlightedRows.add(row);
+
+                deleteIcon = new ImageView(this);
+                deleteIcon.setImageResource(R.drawable.ic_delete_black_24dp);
+                deleteIcon.setPadding(20, 0, 0, 0);
+                deleteIcon.setClickable(true);
+                row.addView(deleteIcon);
+
+                leaveGroupIcon = new ImageView(this);
+                leaveGroupIcon.setImageResource(R.drawable.ic_exit_to_app_black_24dp);
+                leaveGroupIcon.setPadding(20, 0, 0, 0);
+                leaveGroupIcon.setClickable(true);
+                row.addView(leaveGroupIcon);
+
+                wasHighlighted = true;
+
+                leaveGroupIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                            System.out.println("COUNT " + tableLayout.getChildCount());
+                            if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
+                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
+                                admin = conversations.get(i).getAdministrator();
+                                deleteKey = conversations.get(i).getKey();
+                            }
+                        }
+                        if (LogInActivity.loggedInUser.equalsIgnoreCase(admin)) {
+
+                            Toast.makeText(getApplicationContext(), "As group admin you cannot leave. You must delete the group to leave.", Toast.LENGTH_LONG).show();
+
+                        } else {
+                            openConfirmLeaveGroupPopUp();
+                        }
+                    }
+                });
+
+                deleteIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //IF USER IS GROUP ADMIN THEN CAN DELETE
+                        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                            if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
+                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
+                                admin = conversations.get(i).getAdministrator();
+                                deleteKey = conversations.get(i).getKey();
+                            }
+                        }
+                        if (LogInActivity.loggedInUser.equalsIgnoreCase(admin)) {
+
+                            openConfirmDeletePopUp();
+
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Only the group admin can delete this group", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+
+                numPressed = 0;
+            }
+        }
+    }
+
+    public void openConfirmLeaveGroupPopUp()
+    {
+        //Toast.makeText(getApplicationContext(), "Leaving Group", Toast.LENGTH_LONG).show();
+
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
+                (ViewGroup) findViewById(R.id.glayout2));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        TextView text = (TextView) layout.findViewById(R.id.question_info);
+        text.setText("Are you sure you want to leave this group?");
+
+        Button confirmLeave = (Button) layout.findViewById(R.id.delete_info);
+        confirmLeave.setText("Leave Group");
+        confirmLeave.setOnClickListener(new View.OnClickListener() {
+
+            User user;
+            public void onClick(View v) {
+
+                u.checkUserAdminLevel(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        try {
+                            String email = result.getString("Email");
+                            String password = result.getString("Password");
+                            Boolean adminLevel_ = result.getBoolean("Admin");
+                            ArrayList<Conversation> convos = new ArrayList<>();
+
+                            user = new User(email, password, adminLevel_, convos);
+                        }
+                        catch(JSONException e) {
+                        }
+                        if(user != null) {
+                            c.RemoveUserFromGroup(new ServerCallback() {
+                                @Override
+                                public void onSuccess(JSONObject result) {
+                                    Toast.makeText(getApplicationContext(), "Group left.", Toast.LENGTH_LONG).show();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                    startActivity(f);
+                                    finish();
+                                }
+
+                                @Override
+                                public void onSuccess(JSONArray result) {
+                                }
+
+                                @Override
+                                public void onSuccess(String result) {
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Toast.makeText(getApplicationContext(), "Error, unable to leave group...", Toast.LENGTH_LONG).show();
+                                }
+                            }, deleteKey, user);
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+
+                    }
+                }, LogInActivity.loggedInUser);
+
+                pwindo.dismiss();
+            }
+        });
+
+        Button cancelLeave = (Button) layout.findViewById(R.id.cancel_info);
+        cancelLeave.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+        });
+        buttonEffect(cancelLeave);
+    }
+
+
+    public void openConfirmDeletePopUp()
+    {
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
+                (ViewGroup) findViewById(R.id.glayout2));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        Button confirmDelete = (Button) layout.findViewById(R.id.delete_info);
+        confirmDelete.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+
+                c.getConversation(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        messageIDs = new ArrayList<>();
+                        try {
+                            JSONArray mess = result.getJSONArray("Messages");
+                            if (mess != null) {
+                                for (int j = 0; j < mess.length(); j++) {
+                                    JSONObject mess2 = (JSONObject) mess.get(j);
+
+                                    int id = mess2.getInt("MessageID");
+
+                                    messageIDs.add(id);
+                                }
+                            }
+                        } catch (JSONException e) {
+                        }
+
+                        if(messageIDs.size() == 0)
+                        {
+                            c.deleteConversation(new ServerCallback() {
+                                @Override
+                                public void onSuccess(JSONObject result) {
+                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                }
+
+                                @Override
+                                public void onSuccess(JSONArray result) {
+                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                }
+
+                                @Override
+                                public void onSuccess(String result) {
+                                    Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                    startActivity(f);
+                                    finish();
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                }
+                            }, deleteKey);
+                        }
+                        else if(messageIDs.size() > 0)
+                        {
+                            for (int i = 0; i < messageIDs.size(); i++) {
+                                final int f = i;
+                                c.deleteMessagesInConvo(new ServerCallback() {
+                                    @Override
+                                    public void onSuccess(JSONObject result) {
+                                    }
+
+                                    @Override
+                                    public void onSuccess(JSONArray result) {
+                                    }
+
+                                    @Override
+                                    public void onSuccess(String result) {
+
+                                        //Toast.makeText(getApplicationContext(), "Deleted Message" + f, Toast.LENGTH_LONG).show();
+
+                                        if (messageIDs.get(f) == messageIDs.get(messageIDs.size() - 1)) {
+                                            c.deleteConversation(new ServerCallback() {
+                                                @Override
+                                                public void onSuccess(JSONObject result) {
+                                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                                }
+
+                                                @Override
+                                                public void onSuccess(JSONArray result) {
+                                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                                }
+
+                                                @Override
+                                                public void onSuccess(String result) {
+                                                    Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
+                                                    Intent f = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                                    startActivity(f);
+                                                    finish();
+                                                }
+
+                                                @Override
+                                                public void onError(VolleyError error) {
+                                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                                }
+                                            }, deleteKey);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(VolleyError error) {
+                                        Toast.makeText(getApplicationContext(), "Failed to delete group", Toast.LENGTH_LONG).show();
+                                    }
+                                }, messageIDs.get(f));
+
+                            }
+                        }
+                        pwindo.dismiss();
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                    }
+                }, deleteKey);
+            }
+        });
+        buttonEffect(confirmDelete);
+
+        Button cancelDelete = (Button) layout.findViewById(R.id.cancel_info);
+        cancelDelete.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+        });
+        buttonEffect(cancelDelete);
+    }
+
+    int numPressed = 0;
+    boolean wasHighlighted = false;
+    @Override
+    public void onBackPressed()
+    {
+        numPressed++;
+        if(numPressed == 1 && wasHighlighted) {
+            for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                View view = tableLayout.getChildAt(i);
+                if (view instanceof TableRow) {
+                    TableRow row = (TableRow) view;
+                    row.setBackgroundResource(R.drawable.corners);
+                    deleteIcon.setClickable(false);
+                    ((ViewManager) row.getParent()).removeView(deleteIcon);
+                    ((ViewManager) row.getParent()).removeView(leaveGroupIcon);
+                    row.setPadding(20, 20, 20, 20);
+                    row.setGravity(Gravity.CENTER);
+                    row.removeView(deleteIcon);
+                    row.removeView(leaveGroupIcon);
+                }
+            }
+            highlightedRows.clear();
+        }
+        else if(numPressed == 2)
+        {
+            Toast.makeText(getApplicationContext(), "Press back once more to exit..", Toast.LENGTH_LONG).show();
+        }
+        else if(numPressed == 3)
+        {
+            finish();
+        }
     }
 
     public void openPopUpWindow()
@@ -278,9 +638,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 850, true);
-
-
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());

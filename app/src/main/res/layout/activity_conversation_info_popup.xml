@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="470dp"
-    android:layout_height="850dp"
+    android:layout_height="450dp"
     android:background="#CFD8DC"
     android:id="@+id/glayout1">
 
@@ -66,7 +66,7 @@
         android:text="OK"
         android:id="@+id/okButtonlog_info"
         android:layout_below="@+id/type_info"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:layout_centerHorizontal="true"
         android:textColor="@color/white"
         android:background="@color/blueGrey"/>

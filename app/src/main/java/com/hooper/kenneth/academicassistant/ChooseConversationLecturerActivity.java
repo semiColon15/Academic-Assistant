@@ -15,10 +15,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.Button;
-import android.widget.Gallery;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -37,7 +37,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import model.Conversation;
@@ -45,23 +44,26 @@ import model.ConversationServiceConnectivity;
 import model.Message;
 import model.ServerCallback;
 import model.User;
+import model.UserServiceConnectivity;
 
 public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
     private TableLayout tableLayout;
     private ConversationServiceConnectivity c;
+    private UserServiceConnectivity u;
     public static String chosenConvoKey;
     public static String chosenGroupName;
-    private ProgressDialog pDialog;
-    private Toolbar toolbar;
     private ArrayList<Conversation> conversations;
+    private ArrayList<TableRow> highlightedRows;
+    private ArrayList<Integer> messageIDs;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_lecturer);
 
-        pDialog =  new ProgressDialog(this);
+        ProgressDialog pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
+        u = new UserServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
         chosenConvoKey = "";
         chosenGroupName = "";
@@ -69,7 +71,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         tableLayout = (TableLayout) findViewById(R.id.convos);
         tableLayout.setVerticalScrollBarEnabled(true);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Display icon in the toolbar
@@ -81,6 +83,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         mTitle.setText("Conversations");
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
+        highlightedRows = new ArrayList<>();
 
         fillConvos();
     }
@@ -133,7 +136,17 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                         v.invalidate();
                         break;
                     }
+                    case MotionEvent.ACTION_SCROLL: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
                     case MotionEvent.ACTION_UP: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_CANCEL: {
                         v.getBackground().clearColorFilter();
                         v.invalidate();
                         break;
@@ -146,7 +159,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
     public void fillConvos() {
         c.getConversationsForUser(new ServerCallback() {
-
                                       @Override
                                       public void onSuccess(JSONArray response) {
 
@@ -237,20 +249,30 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                   conv.setTextAppearance(getApplicationContext(), R.style.chat);
                                                   conv.setShadowLayer(10, 3, 3, Color.BLACK);
                                                   tableRow.setClickable(true);
+                                                  tableRow.setLongClickable(true);
+
                                                   buttonEffect(tableRow);
 
                                                   tableRow.addView(conv);
                                                   tableLayout.addView(tableRow);
 
                                                   final int f = i;
+
+                                                  tableRow.setOnLongClickListener(new View.OnLongClickListener() {
+                                                      @Override
+                                                      public boolean onLongClick(View v) {
+                                                          highlightRow(tableRow);
+                                                          return true;
+                                                      }
+                                                  });
+
                                                   tableRow.setOnClickListener(new View.OnClickListener() {
                                                       public void onClick(View v) {
+
                                                           saveKey(convos.get(f).getKey(), getApplicationContext());
                                                           chosenConvoKey = convos.get(f).getKey();
                                                           chosenGroupName = convos.get(f).getConversationName();
 
-                                                          System.out.println("WWWWWWOOOOOOO " + chosenConvoKey);
-                                                          System.out.println("WWWWWWOOOOOOO " + chosenGroupName);
                                                           Intent i = new Intent(getApplicationContext(), ViewMessagesActivity.class);
                                                           startActivity(i);
                                                       }
@@ -280,15 +302,352 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         );
     }
 
+    ImageView deleteIcon;
+    ImageView leaveGroupIcon;
+    String admin;
+    String deleteKey;
+    public void highlightRow(final TableRow row)
+    {
+        if(highlightedRows != null) {
+            if(highlightedRows.size() < 1) {
+
+                row.setBackgroundColor(getResources().getColor(R.color.highlight));
+                highlightedRows.add(row);
+
+                deleteIcon = new ImageView(this);
+                deleteIcon.setImageResource(R.drawable.ic_delete_black_24dp);
+                deleteIcon.setPadding(20, 0, 0, 0);
+                deleteIcon.setClickable(true);
+                row.addView(deleteIcon);
+
+                leaveGroupIcon = new ImageView(this);
+                leaveGroupIcon.setImageResource(R.drawable.ic_exit_to_app_black_24dp);
+                leaveGroupIcon.setPadding(20, 0, 0, 0);
+                leaveGroupIcon.setClickable(true);
+                row.addView(leaveGroupIcon);
+
+                wasHighlighted = true;
+
+                leaveGroupIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                            if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
+                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
+                                admin = conversations.get(i).getAdministrator();
+                                deleteKey = conversations.get(i).getKey();
+                            }
+                        }
+                        if (LogInActivity.loggedInUser.equalsIgnoreCase(admin)) {
+
+                            Toast.makeText(getApplicationContext(), "As group admin you cannot leave. You must delete the group to leave.", Toast.LENGTH_LONG).show();
+
+                        } else {
+                            openConfirmLeaveGroupPopUp();
+                        }
+                    }
+                });
+
+                deleteIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //IF USER IS GROUP ADMIN THEN CAN DELETE
+                        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                            if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
+                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
+                                admin = conversations.get(i).getAdministrator();
+                                deleteKey = conversations.get(i).getKey();
+                            }
+                        }
+                        if (LogInActivity.loggedInUser.equalsIgnoreCase(admin)) {
+
+                            openConfirmDeletePopUp();
+
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Only the group admin can delete this group", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+
+                numPressed = 0;
+            }
+        }
+    }
+
+    public void openConfirmLeaveGroupPopUp()
+    {
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationLecturerActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
+                (ViewGroup) findViewById(R.id.glayout2));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        TextView text = (TextView) layout.findViewById(R.id.question_info);
+        text.setText("Are you sure you want to leave this group?");
+
+        Button confirmLeave = (Button) layout.findViewById(R.id.delete_info);
+        confirmLeave.setText("Leave Group");
+        confirmLeave.setOnClickListener(new View.OnClickListener() {
+
+            User user;
+            public void onClick(View v) {
+
+                u.checkUserAdminLevel(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        try {
+                            String email = result.getString("Email");
+                            String password = result.getString("Password");
+                            Boolean adminLevel_ = result.getBoolean("Admin");
+                            ArrayList<Conversation> convos = new ArrayList<>();
+
+                            user = new User(email, password, adminLevel_, convos);
+                        }
+                        catch(JSONException e) {
+                        }
+                        if(user != null) {
+                            c.RemoveUserFromGroup(new ServerCallback() {
+                                @Override
+                                public void onSuccess(JSONObject result) {
+                                    Toast.makeText(getApplicationContext(), "Group left.", Toast.LENGTH_LONG).show();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                    startActivity(f);
+                                    finish();
+                                }
+
+                                @Override
+                                public void onSuccess(JSONArray result) {
+                                }
+
+                                @Override
+                                public void onSuccess(String result) {
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Toast.makeText(getApplicationContext(), "Error, unable to leave group...", Toast.LENGTH_LONG).show();
+                                }
+                            }, deleteKey, user);
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+
+                    }
+                }, LogInActivity.loggedInUser);
+
+                pwindo.dismiss();
+            }
+        });
+
+        Button cancelLeave = (Button) layout.findViewById(R.id.cancel_info);
+        cancelLeave.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+        });
+        buttonEffect(cancelLeave);
+    }
+
+
+    public void openConfirmDeletePopUp()
+    {
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationLecturerActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
+                (ViewGroup) findViewById(R.id.glayout2));
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        Button confirmDelete = (Button) layout.findViewById(R.id.delete_info);
+        confirmDelete.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+
+                c.getConversation(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        messageIDs = new ArrayList<>();
+                        try {
+                            JSONArray mess = result.getJSONArray("Messages");
+                            if (mess != null) {
+                                for (int j = 0; j < mess.length(); j++) {
+                                    JSONObject mess2 = (JSONObject) mess.get(j);
+
+                                    int id = mess2.getInt("MessageID");
+
+                                    messageIDs.add(id);
+                                }
+                            }
+                        } catch (JSONException e) {
+                        }
+
+                        if(messageIDs.size() == 0)
+                        {
+                            c.deleteConversation(new ServerCallback() {
+                                @Override
+                                public void onSuccess(JSONObject result) {
+                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                }
+
+                                @Override
+                                public void onSuccess(JSONArray result) {
+                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                }
+
+                                @Override
+                                public void onSuccess(String result) {
+                                    Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                    startActivity(f);
+                                    finish();
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                }
+                            }, deleteKey);
+                        }
+                        else if(messageIDs.size() > 0)
+                        {
+                            for (int i = 0; i < messageIDs.size(); i++) {
+                                final int f = i;
+                                c.deleteMessagesInConvo(new ServerCallback() {
+                                    @Override
+                                    public void onSuccess(JSONObject result) {
+                                    }
+
+                                    @Override
+                                    public void onSuccess(JSONArray result) {
+                                    }
+
+                                    @Override
+                                    public void onSuccess(String result) {
+
+                                        //Toast.makeText(getApplicationContext(), "Deleted Message" + f, Toast.LENGTH_LONG).show();
+
+                                        if (messageIDs.get(f) == messageIDs.get(messageIDs.size() - 1)) {
+                                            c.deleteConversation(new ServerCallback() {
+                                                @Override
+                                                public void onSuccess(JSONObject result) {
+                                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                                }
+
+                                                @Override
+                                                public void onSuccess(JSONArray result) {
+                                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                                }
+
+                                                @Override
+                                                public void onSuccess(String result) {
+                                                    Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
+                                                    Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                    startActivity(f);
+                                                    finish();
+                                                }
+
+                                                @Override
+                                                public void onError(VolleyError error) {
+                                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                                }
+                                            }, deleteKey);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(VolleyError error) {
+                                        Toast.makeText(getApplicationContext(), "Failed to delete group", Toast.LENGTH_LONG).show();
+                                    }
+                                }, messageIDs.get(f));
+
+                            }
+                        }
+                        pwindo.dismiss();
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                    }
+                }, deleteKey);
+            }
+        });
+        buttonEffect(confirmDelete);
+
+        Button cancelDelete = (Button) layout.findViewById(R.id.cancel_info);
+        cancelDelete.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+        });
+        buttonEffect(cancelDelete);
+    }
+
+    int numPressed = 0;
+    boolean wasHighlighted = false;
+    @Override
+    public void onBackPressed()
+    {
+        numPressed++;
+        if(numPressed == 1 && wasHighlighted) {
+            for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                View view = tableLayout.getChildAt(i);
+                if (view instanceof TableRow) {
+                    TableRow row = (TableRow) view;
+                    row.setBackgroundResource(R.drawable.corners);
+                    deleteIcon.setClickable(false);
+                    ((ViewManager) row.getParent()).removeView(deleteIcon);
+                    ((ViewManager) row.getParent()).removeView(leaveGroupIcon);
+                    row.setPadding(20, 20, 20, 20);
+                    row.setGravity(Gravity.CENTER);
+                    row.removeView(deleteIcon);
+                    row.removeView(leaveGroupIcon);
+                }
+            }
+            highlightedRows.clear();
+        }
+        else if(numPressed == 1 && !wasHighlighted)
+        {
+            finish();
+        }
+        else if(numPressed == 2)
+        {
+            finish();
+        }
+    }
+
     public void openPopUpWindow()
     {
         LayoutInflater inflater = (LayoutInflater) ChooseConversationLecturerActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 850, true);
-
-
+        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
