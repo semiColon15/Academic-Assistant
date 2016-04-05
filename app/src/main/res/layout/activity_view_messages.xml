@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/messageText"
         android:layout_above="@+id/sendButton"
-        android:inputType="textCapSentences"
+        android:inputType="textCapSentences|textMultiLine"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

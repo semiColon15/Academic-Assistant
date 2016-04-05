@@ -1,14 +1,18 @@
 package com.hooper.kenneth.academicassistant;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,15 +30,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.hooper.kenneth.academicassistant.app.Config;
+import com.hooper.kenneth.academicassistant.gcm.GcmIntentService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -56,6 +61,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     private ArrayList<Conversation> conversations;
     private ArrayList<TableRow> highlightedRows;
     private ArrayList<Integer> messageIDs;
+    private int numPressed = 0;
+    private boolean wasHighlighted = false;
+    private ImageView deleteIcon;
+    private ImageView leaveGroupIcon;
+    private String admin;
+    private String deleteKey;
+
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,12 +93,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("Conversations");
+        mTitle.setText(R.string.conv_heading);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
         highlightedRows = new ArrayList<>();
 
         fillConvos();
+
+
     }
 
     @Override
@@ -203,19 +218,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                       for (int j = 0; j < mess.length(); j++) {
                                                           JSONObject mess2 = (JSONObject) mess.get(j);
 
-                                                          int id;
-                                                          String content;
-                                                          String recipient;
-                                                          String sender;
-                                                          String CKey;
+                                                          int id = mess2.getInt("MessageID");
+                                                          String content = mess2.getString("MessageContent");
+                                                          String recipient = mess2.getString("Recipient");
+                                                          String sender = mess2.getString("Sender");
+                                                          String timeStamp = mess2.getString("TimeStamp");
+                                                          String CKey = mess2.getString("ConversationKey");
 
-                                                          id = mess2.getInt("MessageID");
-                                                          content = mess2.getString("MessageContent");
-                                                          recipient = mess2.getString("Recipient");
-                                                          sender = mess2.getString("Sender");
-                                                          CKey = mess2.getString("ConversationKey");
-
-                                                          Message u = new Message(id, content, recipient, sender, CKey);
+                                                          Message u = new Message(id, content, recipient, sender, timeStamp, CKey);
 
                                                           messages.add(u);
                                                       }
@@ -230,6 +240,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                       for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
                                                           if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser)) {
                                                               if (convos.contains(conversations.get(i))) {
+                                                                  System.out.println("");
                                                               } else {
                                                                   convos.add(conversations.get(i));
                                                               }
@@ -302,10 +313,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         );
     }
 
-    ImageView deleteIcon;
-    ImageView leaveGroupIcon;
-    String admin;
-    String deleteKey;
     public void highlightRow(final TableRow row)
     {
         if(highlightedRows != null) {
@@ -386,7 +393,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         pwindo.setBackgroundDrawable(new BitmapDrawable());
 
         TextView text = (TextView) layout.findViewById(R.id.question_info);
-        text.setText("Are you sure you want to leave this group?");
+        text.setText(R.string.confirm_leave_group);
 
         Button confirmLeave = (Button) layout.findViewById(R.id.delete_info);
         confirmLeave.setText("Leave Group");
@@ -407,6 +414,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                             user = new User(email, password, adminLevel_, convos);
                         }
                         catch(JSONException e) {
+                            e.printStackTrace();
                         }
                         if(user != null) {
                             c.RemoveUserFromGroup(new ServerCallback() {
@@ -496,6 +504,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                 }
                             }
                         } catch (JSONException e) {
+                            e.printStackTrace();
                         }
 
                         if(messageIDs.size() == 0)
@@ -608,8 +617,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         buttonEffect(cancelDelete);
     }
 
-    int numPressed = 0;
-    boolean wasHighlighted = false;
     @Override
     public void onBackPressed()
     {
@@ -656,9 +663,9 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         loggedIn.setText(LogInActivity.loggedInUser);
         TextView type = (TextView) pwindo.getContentView().findViewById(R.id.typeDisplay_info);
         if (LogInActivity.loggedInUserType) {
-            type.setText("Lecturer");
+            type.setText(R.string.lecturer);
         } else {
-            type.setText("Student");
+            type.setText(R.string.student);
         }
 
         Button closePopup = (Button) layout.findViewById(R.id.okButtonlog_info);
@@ -685,7 +692,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         }
     }
 
-    public String retrieveKey() {
+    /*public String retrieveKey() {
         String key = "";
         try {
             File myDir = new File(getFilesDir().getAbsolutePath());
@@ -705,5 +712,5 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return key;
-    }
+    }*/
 }

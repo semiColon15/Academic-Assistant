@@ -26,19 +26,16 @@ import model.ServerCallback;
 
 public class JoinGroupActivity extends AppCompatActivity {
 
-    private Button ok;
     private ConversationServiceConnectivity convo;
-    private ProgressDialog pDialog;
-    private Toolbar toolbar;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_join_group_lecturer);
-        pDialog = new ProgressDialog(this);
+        ProgressDialog pDialog = new ProgressDialog(this);
 
         convo = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         final EditText key = (EditText) findViewById(R.id.enrolKey1);
-        ok = (Button) findViewById(R.id.joinGroup1);
+        Button ok = (Button) findViewById(R.id.joinGroup1);
         buttonEffect(ok);
 
         ok.setOnClickListener(new View.OnClickListener() {
@@ -48,12 +45,11 @@ public class JoinGroupActivity extends AppCompatActivity {
                     public void onSuccess(JSONObject result) {
 
                         Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
-                        if(LogInActivity.loggedInUserType == true) {
+                        if (LogInActivity.loggedInUserType) {
                             Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                             startActivity(t);
                             finish();
-                        }
-                        else {
+                        } else {
                             Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
                             startActivity(t);
                             finish();
@@ -71,15 +67,14 @@ public class JoinGroupActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(VolleyError error)
-                    {
+                    public void onError(VolleyError error) {
                         Toast.makeText(getApplicationContext(), "Invalid Key", Toast.LENGTH_LONG).show();
                     }
                 }, key.getText().toString().trim(), LogInActivity.loggedInUser, LogInActivity.password, String.valueOf(LogInActivity.loggedInUserType));
             }
         });
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Display icon in the toolbar
@@ -88,7 +83,7 @@ public class JoinGroupActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("Join A Group");
+        mTitle.setText(R.string.join_group);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
     }
 
@@ -107,14 +102,6 @@ public class JoinGroupActivity extends AppCompatActivity {
                 //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
                 //startActivity(i);
                 //finish();
-                return true;
-            case R.id.miLogout_add:
-                LogInActivity.saveToken("token.txt", "", getApplicationContext());
-                LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
-                LogInActivity.savePassword("password.txt", "", getApplicationContext());
-                Intent e = new Intent(getApplicationContext(), LogInActivity.class);
-                startActivity(e);
-                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

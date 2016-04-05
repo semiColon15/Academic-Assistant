@@ -30,17 +30,13 @@ import model.ServerCallback;
 
 public class CreateGroupActivity extends AppCompatActivity {
 
-    public static String groupKey;
-
     private Button createGroup;
     private ConversationServiceConnectivity convo;
-    private ProgressDialog pDialog;
-    private Toolbar toolbar;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_group_lecturer);
-        pDialog = new ProgressDialog(this);
+        ProgressDialog pDialog = new ProgressDialog(this);
 
         convo = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
 
@@ -52,7 +48,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         createGroup = (Button) findViewById(R.id.createGroupButton);
         buttonEffect(createGroup);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Display icon in the toolbar
@@ -61,7 +57,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("Create A Group");
+        mTitle.setText(R.string.create_group_heading);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
         createGroup.setOnClickListener(new View.OnClickListener() {
@@ -109,8 +105,8 @@ public class CreateGroupActivity extends AppCompatActivity {
                                             ((ViewManager) createGroup.getParent()).removeView(enrolmentKey);
                                             ((ViewManager) createGroup.getParent()).removeView(keyName);
                                             showKey.setText(key);
-                                            createGroup.setText("OK");
-                                            textView.setText("Conversation Key:");
+                                            createGroup.setText(R.string.Ok);
+                                            textView.setText(R.string.conversation_key);
                                             textView.setPadding(0, 20, 0, 0);
 
                                             //groupKey = key;
@@ -206,14 +202,6 @@ public class CreateGroupActivity extends AppCompatActivity {
                 //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
                 //startActivity(i);
                 //finish();
-                return true;
-            case R.id.miLogout_add:
-                LogInActivity.saveToken("token.txt", "", getApplicationContext());
-                LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
-                LogInActivity.savePassword("password.txt", "", getApplicationContext());
-                Intent e = new Intent(getApplicationContext(), LogInActivity.class);
-                startActivity(e);
-                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

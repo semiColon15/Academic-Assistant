@@ -18,9 +18,8 @@
         android:id="@+id/joinGroup1"
         android:textColor="@color/white"
         android:background="@color/blueGrey"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="91dp" />
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -38,6 +37,7 @@
         android:id="@+id/enrolKey1"
         android:layout_below="@+id/enrolKeyText1"
         android:paddingTop="20dp"
+        android:inputType="textCapSentences|textMultiLine"
         android:layout_alignLeft="@+id/enrolKeyText1"
         android:layout_alignStart="@+id/enrolKeyText1"
         android:layout_alignRight="@+id/enrolKeyText1"

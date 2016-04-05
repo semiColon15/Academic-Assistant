@@ -39,9 +39,6 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText confirmPassword;
     private boolean isAdminLevel;
 
-    private ProgressDialog pDialog;
-    private Toolbar toolbar;
-
     private UserServiceConnectivity userServiceConnectivity;
 
     private String[] emailAddresses;
@@ -56,7 +53,7 @@ public class SignUpActivity extends AppCompatActivity {
         Button signUp = (Button) findViewById(R.id.createAccountButton);
         buttonEffect(signUp);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Display icon in the toolbar
@@ -65,10 +62,10 @@ public class SignUpActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("Sign Up");
+        mTitle.setText(R.string.sign_up);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
-        pDialog = new ProgressDialog(this);
+        ProgressDialog pDialog = new ProgressDialog(this);
 
         userServiceConnectivity = new UserServiceConnectivity(getApplicationContext(), pDialog);
 

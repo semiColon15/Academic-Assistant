@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,10 +34,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
 import model.*;
 
 public class ViewMessagesActivity extends AppCompatActivity {
+
+    String apiKey = "AIzaSyBbsP89ibvkKUEr8F6fOFKoO3fCZXZOfD8";
+    String senderID = "113571816922";
+
 
     private EditText messageText;
     private MessageServiceConnectivity connectivity;
@@ -47,14 +56,16 @@ public class ViewMessagesActivity extends AppCompatActivity {
     private String keyConvo;
     private String nameConvo;
     private String groupAdmin;
-    /*private String[] allSenders;
-    private String[] allMessages;*/
     private ArrayList<String> allSenders;
     private ArrayList<String> allMessages;
     private ArrayList<Integer> allMessageIDs;
+    private ArrayList<String> allTimeStamps;
     private ArrayList<String> userList;
     private ConversationServiceConnectivity c;
     private ArrayList<TableRow> highlightedRows;
+    private ImageView deleteIcon;
+    private int deletePos;
+    private int tablePos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +84,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
         tableLayout = (TableLayout) findViewById(R.id.table);
         tableLayout.setVerticalScrollBarEnabled(true);
 
-        if(LogInActivity.loggedInUserType) {
+        if (LogInActivity.loggedInUserType) {
             keyConvo = ChooseConversationLecturerActivity.chosenConvoKey;
             nameConvo = ChooseConversationLecturerActivity.chosenGroupName;
-        }
-        else {
+        } else {
             keyConvo = ChooseConversationStudentActivity.chosenConvoKey;
             nameConvo = ChooseConversationStudentActivity.chosenGroupName;
         }
@@ -88,7 +98,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
         scrollView = (ScrollView) findViewById(R.id.scroll);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Display icon in the toolbar
@@ -112,9 +122,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                     params2.height = 300;
                     tableLayout.setLayoutParams(params);
                     scrollView.setLayoutParams(params2);
-                }
-                else if(heightDiff < 300)
-                {
+                } else if (heightDiff < 300) {
                     params.height = 600;
                     params2.height = 600;
                     tableLayout.setLayoutParams(params);
@@ -133,42 +141,44 @@ public class ViewMessagesActivity extends AppCompatActivity {
             @Override
             public void onSuccess(JSONArray response) {
                 try {
-                    /*allSenders = new String[response.length()];
-                    allMessages = new String[response.length()];
-                    allMessageIDs = new int[response.length()];*/
                     allSenders = new ArrayList<>();
                     allMessages = new ArrayList<>();
                     allMessageIDs = new ArrayList<>();
+                    allTimeStamps = new ArrayList<>();
                     for (int i = 0; i < response.length(); i++) {
 
                         JSONObject message = (JSONObject) response.get(i);
                         String key = message.getString("ConversationKey");
                         String type;
-                        if(LogInActivity.loggedInUserType)
-                        {
+                        if (LogInActivity.loggedInUserType) {
                             type = ChooseConversationLecturerActivity.chosenConvoKey;
-                        }
-                        else
-                        {
+                        } else {
                             type = ChooseConversationStudentActivity.chosenConvoKey;
                         }
-                        if (key.equalsIgnoreCase(type))
-                        {
+                        if (key.equalsIgnoreCase(type)) {
                             String sender = message.getString("Sender");
                             String message_ = message.getString("MessageContent");
                             int messageID = message.getInt("MessageID");
+                            String timeStamp = message.getString("TimeStamp");
                             allSenders.add(sender);
                             allMessages.add(message_);
                             allMessageIDs.add(messageID);
+                            allTimeStamps.add(timeStamp);
                         }
                     }
-                    setInitialViews();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
 
+                setInitialViews();
+                scrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollView.fullScroll(View.FOCUS_DOWN);
+                    }
+                });
             }
 
             @Override
@@ -184,130 +194,83 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
         sendButton.setOnClickListener(new View.OnClickListener() {
                                           public void onClick(View v) {
-                                              if(!messageText.getText().toString().equalsIgnoreCase("")){
 
-                                                  if(LogInActivity.loggedInUserType) {
-                                                      connectivity.SendMessage(new ServerCallback() {
-                                                          @Override
-                                                          public void onSuccess(JSONObject result) {
-                                                              connectivity.setViews(new ServerCallback() {
-                                                                  @Override
-                                                                  public void onSuccess(JSONObject result) {
+                                              Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+1:00"));
+                                              Date currentLocalTime = cal.getTime();
+                                              //DateFormat date = new SimpleDateFormat("dd-MMM-yyyy HH:mm a");
+                                              //TODO : SEE IF THIS WORKS BETTER
+                                              DateFormat date = SimpleDateFormat.getDateTimeInstance();
 
-                                                                  }
+                                              date.setTimeZone(TimeZone.getTimeZone("GMT+1:00"));
 
-                                                                  @Override
-                                                                  public void onSuccess(JSONArray result) {
-                                                                      try {
-                                                                          String jsonResponse = "";
-                                                                          String senderText = "";
-                                                                          String contentText = "";
-                                                                          for (int i = 0; i < result.length(); i++) {
+                                              String time = date.format(currentLocalTime);
+                                              allTimeStamps.add(time);
+                                              System.out.println("TIME = " + time);
 
-                                                                              JSONObject message = (JSONObject) result.get(i);
+                                              if (!messageText.getText().toString().equalsIgnoreCase("")) {
 
-                                                                              String content = message.getString("messageContent");
-                                                                              String sender = message.getString("sender");
+                                                  connectivity.SendMessage(new ServerCallback() {
+                                                      @Override
+                                                      public void onSuccess(JSONObject result) {
+                                                          scrollView.fullScroll(View.FOCUS_DOWN);
+                                                          /*connectivity.setViews(new ServerCallback() {
+                                                              @Override
+                                                              public void onSuccess(JSONObject result) {
 
-                                                                              senderText += sender + ":\n";
-                                                                              contentText += content + "\n";
-                                                                          }
+                                                              }
 
-                                                                      } catch (JSONException e) {
-                                                                          e.printStackTrace();
+                                                              @Override
+                                                              public void onSuccess(JSONArray result) {
+                                                                 *//* try {
+                                                                      //TODO: CHECK IF COMMENTS BREAK APP
+                                                                      //String jsonResponse = "";
+                                                                      //String senderText = "";
+                                                                      //String contentText = "";
+                                                                      for (int i = 0; i < result.length(); i++) {
+
+                                                                          JSONObject message = (JSONObject) result.get(i);
+
+                                                                          String content = message.getString("messageContent");
+                                                                          String sender = message.getString("sender");
+
+                                                                          //senderText += sender + ":\n";
+                                                                          //contentText += content + "\n";
                                                                       }
-                                                                  }
 
-                                                                  @Override
-                                                                  public void onSuccess(String result) {
+                                                                  } catch (JSONException e) {
+                                                                      e.printStackTrace();
+                                                                  }*//*
+                                                                 scrollView.fullScroll(View.FOCUS_DOWN);
+                                                              }
 
-                                                                  }
+                                                              @Override
+                                                              public void onSuccess(String result) {
 
-                                                                  @Override
-                                                                  public void onError(VolleyError error) {
+                                                              }
 
-                                                                  }
-                                                              });
-                                                          }
+                                                              @Override
+                                                              public void onError(VolleyError error) {
 
-                                                          @Override
-                                                          public void onSuccess(JSONArray result) {
+                                                              }
+                                                          });*/
+                                                      }
 
-                                                          }
+                                                      @Override
+                                                      public void onSuccess(JSONArray result) {
 
-                                                          @Override
-                                                          public void onSuccess(String result) {
+                                                      }
 
-                                                          }
+                                                      @Override
+                                                      public void onSuccess(String result) {
 
-                                                          @Override
-                                                          public void onError(VolleyError error) {
+                                                      }
 
-                                                          }
-                                                      }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, keyConvo);
-                                                  }
-                                                  /*else
-                                                  {
-                                                      connectivity.SendMessage(new ServerCallback() {
-                                                          @Override
-                                                          public void onSuccess(JSONObject result) {
+                                                      @Override
+                                                      public void onError(VolleyError error) {
 
-                                                          }
+                                                      }
+                                                  }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, time, keyConvo);
 
-                                                          @Override
-                                                          public void onSuccess(JSONArray result) {
-                                                              connectivity.setViews(new ServerCallback() {
-                                                                  @Override
-                                                                  public void onSuccess(JSONObject result) {
-
-                                                                  }
-
-                                                                  @Override
-                                                                  public void onSuccess(JSONArray result) {
-                                                                      try {
-                                                                          String jsonResponse = "";
-                                                                          String senderText = "";
-                                                                          String contentText = "";
-                                                                          for (int i = 0; i < result.length(); i++) {
-
-                                                                              JSONObject message = (JSONObject) result.get(i);
-
-
-                                                                              String content = message.getString("messageContent");
-                                                                              String sender = message.getString("sender");
-
-                                                                              senderText += sender + ":\n";
-                                                                              contentText += content + "\n";
-                                                                          }
-
-                                                                      } catch (JSONException e) {
-                                                                          e.printStackTrace();
-                                                                      }
-                                                                  }
-
-                                                                  @Override
-                                                                  public void onSuccess(String result) {
-
-                                                                  }
-
-                                                                  @Override
-                                                                  public void onError(VolleyError error) {
-
-                                                                  }
-                                                              });
-                                                          }*
-
-                                                          @Override
-                                                          public void onSuccess(String result) {
-
-                                                          }
-
-                                                          @Override
-                                                          public void onError(VolleyError error) {
-
-                                                          }
-                                                      }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, keyConvo);
-                                                  }*/
                                                   final TableRow tableRow = new TableRow(getApplicationContext());
                                                   tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
                                                   tableRow.setBackgroundResource(R.drawable.bubble_green);
@@ -318,10 +281,12 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   message.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
 
                                                   final TextView sender = new TextView(getApplicationContext());
-                                                  sender.setText(LogInActivity.loggedInUser + "\t");
+                                                  sender.setText(LogInActivity.loggedInUser);
+                                                  //sender.setText(LogInActivity.loggedInUser + "\t");
                                                   sender.setPadding(0, 0, 10, 0);
                                                   sender.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                                                   sender.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+
 
                                                   tableRow.setLongClickable(true);
                                                   tableRow.setGravity(Gravity.CENTER);
@@ -329,14 +294,24 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   tableRow.addView(sender);
                                                   tableRow.addView(message);
 
+                                                  final TableRow dateTimeRow = new TableRow(getApplicationContext());
+                                                  tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                                                  final TextView timeStamp = new TextView(getApplicationContext());
+                                                  timeStamp.setText(time);
+                                                  timeStamp.setPadding(20, 0, 0, 0);
+                                                  timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
+                                                  timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                                                  dateTimeRow.addView(timeStamp);
+
+                                                  tableLayout.addView(dateTimeRow);
                                                   tableLayout.addView(tableRow);
                                                   messageText.setText("");
 
-                                                  if(LogInActivity.loggedInUserType) {
+                                                  if (LogInActivity.loggedInUserType) {
                                                       ChooseConversationLecturerActivity.saveKey("", getApplicationContext());
-                                                  }
-                                                  else
-                                                  {
+                                                  } else {
                                                       ChooseConversationStudentActivity.saveKey("", getApplicationContext());
                                                   }
 
@@ -347,6 +322,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                           return true;
                                                       }
                                                   });
+
+                                                  scrollView.fullScroll(View.FOCUS_DOWN);
                                               }
                                           }
                                       }
@@ -364,8 +341,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 if(allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
                     tableRow.setBackgroundResource(R.drawable.bubble_green);
                 }
-                else
-                {
+                else {
                     tableRow.setBackgroundResource(R.drawable.bubble_yellow);
                 }
 
@@ -386,16 +362,28 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 tableRow.addView(senderInitial);
                 tableRow.addView(messageInitial);
 
+                final TableRow dateTimeRow = new TableRow(getApplicationContext());
+                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                final TextView timeStamp = new TextView(getApplicationContext());
+                timeStamp.setText(allTimeStamps.get(i));
+                timeStamp.setPadding(20,0,0,0);
+                timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
+                timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                dateTimeRow.addView(timeStamp);
+
+                tableLayout.addView(dateTimeRow);
                 tableLayout.addView(tableRow);
 
                 tableRow.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        for(int g =0; g < allMessages.size();g++) {
+                        for(int g =0; g < tableLayout.getChildCount();g++) {
                             if(v == tableLayout.getChildAt(g)) {
                                 highlightRow(tableRow);
-                                deletePos = g;
-                                System.out.println("DELTE POS =  " + deletePos);
+                                deletePos = (g-1)/2;
+                                tablePos = (deletePos*2)+1;
                                 return true;
                             }
                         }
@@ -406,8 +394,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
         }
     }
 
-    ImageView deleteIcon;
-    int deletePos;
     public void highlightRow(final TableRow row)
     {
         if(highlightedRows != null) {
@@ -440,15 +426,12 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                     Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                                 }
 
-                                System.out.print("ADMIN" + groupAdmin + "END");
-                                System.out.print("LOGGED IN" + LogInActivity.loggedInUser + "END");
-
                                 //CHECKS FOR ADMIN DELETE ACCESS GO HERE
                                 if(LogInActivity.loggedInUser.equalsIgnoreCase(groupAdmin)) {
                                     openPopUpDeleteWindow();
                                 }
                                 else {
-                                    if(LogInActivity.loggedInUser.equalsIgnoreCase(((TextView)((TableRow) tableLayout.getChildAt(deletePos)).getChildAt(0)).getText().toString())) // == user on that row
+                                    if(LogInActivity.loggedInUser.equalsIgnoreCase(((TextView)((TableRow) tableLayout.getChildAt(tablePos)).getChildAt(0)).getText().toString()))
                                     {
                                         openPopUpDeleteWindow();
                                     }
@@ -491,7 +474,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         pwindo.setBackgroundDrawable(new BitmapDrawable());
 
         TextView text = (TextView) layout.findViewById(R.id.question_info);
-        text.setText("Are you sure you want to delete this message?");
+        text.setText(R.string.popup_msg_confirm_dlt);
 
         final Button confirmDelete = (Button) layout.findViewById(R.id.delete_info);
         buttonEffect(confirmDelete);
@@ -546,10 +529,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
     {
         numPressed++;
         if(numPressed == 1 && wasHighlighted) {
-            View view = tableLayout.getChildAt(deletePos);
+            View view = tableLayout.getChildAt(tablePos);
             if (view instanceof TableRow) {
                 TableRow row = (TableRow) view;
-                if(((TextView)((TableRow) tableLayout.getChildAt(deletePos)).getChildAt(0)).getText().toString().equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                if(((TextView)((TableRow) tableLayout.getChildAt(tablePos)).getChildAt(0)).getText().toString().equalsIgnoreCase(LogInActivity.loggedInUser)) {
                     row.setBackgroundResource(R.drawable.bubble_green);
                 }
                 else
@@ -558,7 +541,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 }
                 deleteIcon.setClickable(false);
                 ((ViewManager) row.getParent()).removeView(deleteIcon);
-                //row.setPadding(20, 20, 20, 20);
                 row.setGravity(Gravity.CENTER);
                 row.removeView(deleteIcon);
             }
@@ -587,14 +569,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.miInfo_msg:
                 openPopUpWindow();
-                return true;
-            case R.id.miLogout_msg:
-                LogInActivity.saveToken("token.txt", "", getApplicationContext());
-                LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
-                LogInActivity.savePassword("password.txt", "", getApplicationContext());
-                Intent e = new Intent(getApplicationContext(), LogInActivity.class);
-                startActivity(e);
-                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -632,8 +606,9 @@ public class ViewMessagesActivity extends AppCompatActivity {
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
 
+        //TODO: CHECK TOOLBAR WORKING WITH LAYOUT.
         /*Toolbar toolbar2;
-        toolbar2 = (Toolbar) findViewById(R.id.tool_info);
+        toolbar2 = (Toolbar) layouyt.findViewById(R.id.tool_info);
         setSupportActionBar(toolbar2);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -684,7 +659,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                     if (LogInActivity.loggedInUser.equalsIgnoreCase(groupAdmin)) {
                         key.setText(keyConvo);
                     } else {
-                        key.setText("Admin access needed.");
+                        key.setText(R.string.popup_msg_admin_needed);
                     }
 
                 } catch (JSONException e) {

@@ -140,7 +140,7 @@ public class MessageServiceConnectivity {
             pDialog.dismiss();
     }
 
-    public void SendMessage(final ServerCallback callback, String content, String recipient, String sender, String convoKey)
+    public void SendMessage(final ServerCallback callback, String content, String recipient, String sender, String timeStamp, String convoKey)
     {
         String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/Messages/PostMessage/?";
         HashMap<String, String> params = new HashMap<>();
@@ -148,6 +148,7 @@ public class MessageServiceConnectivity {
         params.put("MessageContent", content);
         params.put("Recipient", recipient);
         params.put("Sender", sender);
+        params.put("TimeStamp", timeStamp);
         params.put("ConversationKey", convoKey);
 
         JsonObjectRequest req = new JsonObjectRequest(baseUrl, new JSONObject(params),

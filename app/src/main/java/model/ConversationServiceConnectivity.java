@@ -266,7 +266,7 @@ public class ConversationServiceConnectivity {
 
                     @Override
                     public void onResponse(String response) {
-                        Log.d(TAG, response.toString());
+                        Log.d(TAG, response);
 
                         callback.onSuccess(response);
                         hidepDialog();
@@ -305,7 +305,7 @@ public class ConversationServiceConnectivity {
 
                     @Override
                     public void onResponse(String response) {
-                        Log.d(TAG, response.toString());
+                        Log.d(TAG, response);
 
                         callback.onSuccess(response);
                         hidepDialog();

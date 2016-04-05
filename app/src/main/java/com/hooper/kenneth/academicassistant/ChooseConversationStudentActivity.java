@@ -31,10 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -53,8 +50,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     private UserServiceConnectivity u;
     public static String chosenConvoKey;
     public static String chosenGroupName;
-    private ProgressDialog pDialog;
-    private Toolbar toolbar;
     private ArrayList<Conversation> conversations;
     private ArrayList<TableRow> highlightedRows;
     private ArrayList<Integer> messageIDs;
@@ -63,7 +58,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_student);
 
-        pDialog =  new ProgressDialog(this);
+        ProgressDialog pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         u = new UserServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
@@ -73,7 +68,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         tableLayout = (TableLayout) findViewById(R.id.convos_stu);
         tableLayout.setVerticalScrollBarEnabled(true);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Display icon in the toolbar
@@ -82,7 +77,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("Conversations");
+        mTitle.setText(R.string.conv_heading);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
         highlightedRows = new ArrayList<>();
@@ -191,19 +186,14 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                                       for (int j = 0; j < mess.length(); j++) {
                                                           JSONObject mess2 = (JSONObject) mess.get(j);
 
-                                                          int id;
-                                                          String content;
-                                                          String recipient;
-                                                          String sender;
-                                                          String CKey;
+                                                          int id = mess2.getInt("MessageID");
+                                                          String content = mess2.getString("MessageContent");
+                                                          String recipient = mess2.getString("Recipient");
+                                                          String sender = mess2.getString("Sender");
+                                                          String timeStamp = mess2.getString("TimeStamp");
+                                                          String CKey = mess2.getString("ConversationKey");
 
-                                                          id = mess2.getInt("MessageID");
-                                                          content = mess2.getString("MessageContent");
-                                                          recipient = mess2.getString("Recipient");
-                                                          sender = mess2.getString("Sender");
-                                                          CKey = mess2.getString("ConversationKey");
-
-                                                          Message u = new Message(id, content, recipient, sender, CKey);
+                                                          Message u = new Message(id, content, recipient, sender, timeStamp, CKey);
 
                                                           messages.add(u);
                                                       }
@@ -218,6 +208,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                                       for (int j = 0; j < conversations.get(i).getMembers().size(); j++) {
                                                           if (conversations.get(i).getMembers().get(j).getEmail().equalsIgnoreCase(LogInActivity.loggedInUser)) {
                                                               if (convos.contains(conversations.get(i))) {
+                                                                  System.out.println("");
                                                               } else {
                                                                   convos.add(conversations.get(i));
                                                               }
@@ -365,8 +356,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
     public void openConfirmLeaveGroupPopUp()
     {
-        //Toast.makeText(getApplicationContext(), "Leaving Group", Toast.LENGTH_LONG).show();
-
         LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
@@ -377,10 +366,10 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         pwindo.setBackgroundDrawable(new BitmapDrawable());
 
         TextView text = (TextView) layout.findViewById(R.id.question_info);
-        text.setText("Are you sure you want to leave this group?");
+        text.setText(R.string.confirm_leave_group);
 
         Button confirmLeave = (Button) layout.findViewById(R.id.delete_info);
-        confirmLeave.setText("Leave Group");
+        confirmLeave.setText(R.string.leave_group);
         confirmLeave.setOnClickListener(new View.OnClickListener() {
 
             User user;
@@ -398,6 +387,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                             user = new User(email, password, adminLevel_, convos);
                         }
                         catch(JSONException e) {
+                            e.printStackTrace();
                         }
                         if(user != null) {
                             c.RemoveUserFromGroup(new ServerCallback() {
@@ -487,6 +477,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                 }
                             }
                         } catch (JSONException e) {
+                            e.printStackTrace();
                         }
 
                         if(messageIDs.size() == 0)
@@ -531,8 +522,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
                                     @Override
                                     public void onSuccess(String result) {
-
-                                        //Toast.makeText(getApplicationContext(), "Deleted Message" + f, Toast.LENGTH_LONG).show();
 
                                         if (messageIDs.get(f) == messageIDs.get(messageIDs.size() - 1)) {
                                             c.deleteConversation(new ServerCallback() {
@@ -622,11 +611,11 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             }
             highlightedRows.clear();
         }
-        else if(numPressed == 2)
+        else if(numPressed == 1 && !wasHighlighted)
         {
-            Toast.makeText(getApplicationContext(), "Press back once more to exit..", Toast.LENGTH_LONG).show();
+            finish();
         }
-        else if(numPressed == 3)
+        else if(numPressed == 2)
         {
             finish();
         }
@@ -647,9 +636,9 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         loggedIn.setText(LogInActivity.loggedInUser);
         TextView type = (TextView) pwindo.getContentView().findViewById(R.id.typeDisplay_info);
         if (LogInActivity.loggedInUserType) {
-            type.setText("Lecturer");
+            type.setText(R.string.lecturer);
         } else {
-            type.setText("Student");
+            type.setText(R.string.student);
         }
 
         Button closePopup = (Button) layout.findViewById(R.id.okButtonlog_info);
@@ -676,7 +665,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         }
     }
 
-    public String retrieveKey() {
+    /*public String retrieveKey() {
         String key = "";
         try {
             File myDir = new File(getFilesDir().getAbsolutePath());
@@ -696,5 +685,5 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return key;
-    }
+    }*/
 }
