@@ -1,15 +1,15 @@
 package com.hooper.kenneth.academicassistant;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -30,16 +30,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.hooper.kenneth.academicassistant.app.Config;
-import com.hooper.kenneth.academicassistant.gcm.GcmIntentService;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.hooper.kenneth.academicassistant.notifications.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -50,6 +51,9 @@ import model.Message;
 import model.ServerCallback;
 import model.User;
 import model.UserServiceConnectivity;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
@@ -67,12 +71,41 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     private ImageView leaveGroupIcon;
     private String admin;
     private String deleteKey;
+    private int startUpNumber;
 
-
+    //NOTIFICATIONS
+    private String SENDER_ID = "113571816922";
+    private static final String TAG = "LecturerConvo";
+    private GoogleCloudMessaging gcm;
+    private Context context;
+    private String registrationId;
+    //
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_lecturer);
+
+
+        System.out.println("STARTUP " + retrieveStartUpNumber());
+
+        startUpNumber = Integer.parseInt(retrieveStartUpNumber());
+
+        if(startUpNumber > 0)
+        {
+            System.out.println("not first time starting");
+        }
+        else if(startUpNumber == 0)
+        {
+            saveStartUpNumber("1", getApplicationContext());
+            System.out.println("SAVED start up num");
+        }
+        else if(startUpNumber < 0)
+        {
+            saveStartUpNumber("1", getApplicationContext());
+            System.out.println("SAVED start up num");
+        }
+
+
 
         ProgressDialog pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
@@ -80,6 +113,16 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         saveKey("", getApplicationContext());
         chosenConvoKey = "";
         chosenGroupName = "";
+
+
+
+        //NOTIFICATIONS
+        context = getApplicationContext();
+        gcm = GoogleCloudMessaging.getInstance(this);
+        //
+
+
+
 
         tableLayout = (TableLayout) findViewById(R.id.convos);
         tableLayout.setVerticalScrollBarEnabled(true);
@@ -100,7 +143,18 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
         fillConvos();
 
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(startUpNumber == 0 || startUpNumber < 0) {
+            new RegisterInBackgroundTask(context).execute();
+        }    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Override
@@ -132,6 +186,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
+                saveStartUpNumber("0", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
                 finish();
@@ -340,7 +395,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
-                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
                             }
@@ -361,7 +415,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                         //IF USER IS GROUP ADMIN THEN CAN DELETE
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
-                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
                             }
@@ -692,6 +745,38 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         }
     }
 
+    public static void saveStartUpNumber(String num, Context ctx)
+    {
+        FileOutputStream fos;
+        try {
+            fos = ctx.openFileOutput("StartUpNumber.txt", Context.MODE_PRIVATE);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(num);
+            oos.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public String retrieveStartUpNumber() {
+        String key = "";
+        try {
+            File myDir = new File(getFilesDir().getAbsolutePath());
+            BufferedReader br = new BufferedReader(new FileReader(myDir + "/StartUpNumber.txt"));
+            String s = br.readLine();
+            char[] p = s.toCharArray();
+            for (int i = 7; i < s.length(); i++) {
+                key += p[i];
+                System.out.println("LOOP " + p[i]);
+            }
+            System.out.println("Key IS " + key);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return key;
+    }
+
     /*public String retrieveKey() {
         String key = "";
         try {
@@ -713,4 +798,100 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         }
         return key;
     }*/
+
+
+    private class RegisterInBackgroundTask extends AsyncTask<String,String,String> {
+        private Context context;
+
+        public RegisterInBackgroundTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected String doInBackground(String... arg0) {
+            String message = "";
+            try {
+                if (gcm == null) {
+                    gcm = GoogleCloudMessaging.getInstance(context);
+                }
+                registrationId = gcm.register(SENDER_ID);
+                message = "Device successfully registered with GCM, notification token=" + registrationId;
+                Log.d(TAG, message);
+                sendRegistrationIdToBackend(registrationId);
+
+            } catch (IOException ex) {
+                message = "GCM registration error :" + ex.getMessage();
+            }
+            return message;
+        }
+
+        @Override
+        protected void onPostExecute(String msg) {
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+        }
+
+        private void sendRegistrationIdToBackend(String registrationId) {
+
+            System.out.println("IN REGISTERING METHOD");
+
+            //String backendBaseUrl = readStringFromSharedPreferences(SettingsActivity.SETTINGS_KEY_BACKEND_URL);
+            String backendBaseUrl = "http://academicassistantservice2.azurewebsites.net";
+            if (backendBaseUrl == null || backendBaseUrl == "")
+            {
+                return;//no backend base url set in settings, do not try to call backend
+            }
+
+            System.out.println("GOT BY NULL CHECK");
+
+            PushNotificationClient client = new PushNotificationClient(backendBaseUrl);
+            Device device = createDevice(registrationId);
+
+            client.registerDevice(device, new Callback<Device>() {
+                @Override
+                public void success(Device device, Response response) {
+                    writeStringToSharedPreferences(SettingsActivity.SETTINGS_KEY_DEVICEGUID, device.DeviceGuid);
+                    Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void failure(RetrofitError retrofitError) {
+                    Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+
+            Log.i(TAG, registrationId);
+        }
+
+        private Device createDevice(String registrationId) {
+            Device device = new Device();
+            device.Platform = "Android";
+            device.Token = registrationId;
+            device.UserName = LogInActivity.loggedInUser;
+            device.DeviceGuid = null;
+            //todo set device.PlatformDescription based on Android version
+            device.SubscriptionCategories = new ArrayList<>();
+            return device;
+        }
+
+        private String readStringFromSharedPreferences(String preferenceKey) {
+            return PreferenceManager
+                    .getDefaultSharedPreferences(context)
+                    .getString(preferenceKey, "");
+        }
+
+        private void writeStringToSharedPreferences(String preferenceKey, String value) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(preferenceKey, value);
+            editor.commit();
+        }
+    }
 }
+
+
+
+
+
+
+
+

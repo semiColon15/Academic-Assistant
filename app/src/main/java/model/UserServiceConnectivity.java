@@ -5,6 +5,7 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -63,6 +64,12 @@ public class UserServiceConnectivity {
                 hidepDialog();
             }
         });
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(req);
     }
 
@@ -93,6 +100,11 @@ public class UserServiceConnectivity {
                     hidepDialog();
                 }
             });
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         mRequestQueue.add(req);
     }
@@ -133,6 +145,11 @@ public class UserServiceConnectivity {
             }
         };
 
+        req2.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(req2);
     }
 
@@ -160,6 +177,11 @@ public class UserServiceConnectivity {
                 hidepDialog();
             }
         });
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         mRequestQueue.add(req);
     }
@@ -191,6 +213,11 @@ public class UserServiceConnectivity {
 
                     }
                 });
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Adding request to request queue
         mRequestQueue.add(req);

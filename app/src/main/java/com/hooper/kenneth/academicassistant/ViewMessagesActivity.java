@@ -47,7 +47,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
     String apiKey = "AIzaSyBbsP89ibvkKUEr8F6fOFKoO3fCZXZOfD8";
     String senderID = "113571816922";
-
+    String DefaultFullAccessSignatrue = "Endpoint=sb://academicassistantbus.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Dp2/BtK9foRgfapH+1dpmMwlHtA6KFvQg6ieMEixXpM=";
 
     private EditText messageText;
     private MessageServiceConnectivity connectivity;
@@ -73,9 +73,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_messages);
 
         messageText = (EditText) findViewById(R.id.messageText);
-        Button sendButton = (Button) findViewById(R.id.sendButton);
 
-        buttonEffect(sendButton);
+        ImageView sendButton = (ImageView) findViewById(R.id.send_button);
+        sendButton.setImageResource(R.drawable.ic_send_black_24dp);
+        sendButton.setClickable(true);
 
         ProgressDialog pDialog = new ProgressDialog(this);
         pDialog.setMessage("Please wait...");
@@ -197,8 +198,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                                               Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+1:00"));
                                               Date currentLocalTime = cal.getTime();
-                                              //DateFormat date = new SimpleDateFormat("dd-MMM-yyyy HH:mm a");
-                                              //TODO : SEE IF THIS WORKS BETTER
                                               DateFormat date = SimpleDateFormat.getDateTimeInstance();
 
                                               date.setTimeZone(TimeZone.getTimeZone("GMT+1:00"));
@@ -213,46 +212,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                       @Override
                                                       public void onSuccess(JSONObject result) {
                                                           scrollView.fullScroll(View.FOCUS_DOWN);
-                                                          /*connectivity.setViews(new ServerCallback() {
-                                                              @Override
-                                                              public void onSuccess(JSONObject result) {
-
-                                                              }
-
-                                                              @Override
-                                                              public void onSuccess(JSONArray result) {
-                                                                 *//* try {
-                                                                      //TODO: CHECK IF COMMENTS BREAK APP
-                                                                      //String jsonResponse = "";
-                                                                      //String senderText = "";
-                                                                      //String contentText = "";
-                                                                      for (int i = 0; i < result.length(); i++) {
-
-                                                                          JSONObject message = (JSONObject) result.get(i);
-
-                                                                          String content = message.getString("messageContent");
-                                                                          String sender = message.getString("sender");
-
-                                                                          //senderText += sender + ":\n";
-                                                                          //contentText += content + "\n";
-                                                                      }
-
-                                                                  } catch (JSONException e) {
-                                                                      e.printStackTrace();
-                                                                  }*//*
-                                                                 scrollView.fullScroll(View.FOCUS_DOWN);
-                                                              }
-
-                                                              @Override
-                                                              public void onSuccess(String result) {
-
-                                                              }
-
-                                                              @Override
-                                                              public void onError(VolleyError error) {
-
-                                                              }
-                                                          });*/
                                                       }
 
                                                       @Override

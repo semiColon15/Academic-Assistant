@@ -10,14 +10,11 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +24,13 @@ import com.android.volley.VolleyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 import model.ServerCallback;
 import model.User;
@@ -141,7 +145,14 @@ public class SignUpActivity extends AppCompatActivity {
                                                     JSONObject jsonResponse = new JSONObject(response);
                                                     LogInActivity.token = jsonResponse.getString("access_token");
 
+                                                    System.out.println("EMAIL 1 === " + user.getEmail());
                                                     LogInActivity.saveToken("token.txt", LogInActivity.token, getApplicationContext());
+                                                    LogInActivity.saveLoggedInUser("loggedInUser.txt", user.getEmail(), getApplicationContext());
+                                                    LogInActivity.saveLoggedInUserType("loggedInUserType.txt", isAdminLevel, getApplicationContext());
+                                                    LogInActivity.loggedInUser = retrieveLoggedInUser();
+                                                    LogInActivity.loggedInUserType = retrieveLoggedInUserType();
+                                                    System.out.println("LOGGED IN ===== " + LogInActivity.loggedInUser);
+                                                    System.out.println("SAVED USER  ===== " + retrieveLoggedInUser());
 
                                                     VolleyLog.v("Response:%n %s", response);
                                                     Toast.makeText(getApplicationContext(), "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
@@ -294,7 +305,7 @@ public class SignUpActivity extends AppCompatActivity {
                 password.setTextColor(Color.RED);
                 confirmPassword.setTextColor(Color.RED);
                 Toast.makeText(getApplicationContext(), "Password does not meet requirements." +
-                        "Must be 6 long and contain 1 uppercase, 1 digit and 1 non-digit/letter.", Toast.LENGTH_LONG).show();
+                        "Must be 6 long and contain 1 uppercase and 1 digit.", Toast.LENGTH_LONG).show();
             }
         }
         return isValid;
@@ -303,7 +314,6 @@ public class SignUpActivity extends AppCompatActivity {
     public boolean passwordMeetsRequirements() {
         boolean containsUpper = false;
         boolean containsNum = false;
-        boolean containsNonLetterOrDigit = false;
 
         char[] passwordChar = password.getText().toString().trim().toCharArray();
 
@@ -319,10 +329,47 @@ public class SignUpActivity extends AppCompatActivity {
             if (Character.isDigit(passwordChar[i])) {
                 containsNum = true;
             }
-            if (!Character.isLetterOrDigit(passwordChar[i])) {
-                containsNonLetterOrDigit = true;
-            }
         }
-        return (containsNonLetterOrDigit && containsNum && containsUpper);
+        return (containsNum && containsUpper);
+    }
+
+    public String retrieveLoggedInUser()
+    {
+        String user = "";
+        try {
+            File myDir = new File(getFilesDir().getAbsolutePath());
+            BufferedReader br = new BufferedReader(new FileReader(myDir + "/loggedInUser.txt"));
+            String s = br.readLine();
+            char[] p = s.toCharArray();
+            for(int i = 7; i < s.length(); i++)
+            {
+                user += p[i];
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return user;
+
+    }
+
+    public boolean retrieveLoggedInUserType()
+    {
+        String type = "";
+        try {
+            File myDir = new File(getFilesDir().getAbsolutePath());
+            BufferedReader br = new BufferedReader(new FileReader(myDir + "/loggedInUserType.txt"));
+            String s = br.readLine();
+            char[] p = s.toCharArray();
+            for(int i = 7; i < s.length(); i++)
+            {
+                type += p[i];
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Boolean.valueOf(type);
     }
 }

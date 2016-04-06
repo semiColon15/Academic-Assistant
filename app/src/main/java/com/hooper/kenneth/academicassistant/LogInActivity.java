@@ -21,10 +21,6 @@ import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.hooper.kenneth.academicassistant.app.Config;
-import com.hooper.kenneth.academicassistant.gcm.GcmIntentService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,17 +53,13 @@ public class LogInActivity extends AppCompatActivity {
 
     ProgressDialog pDialog;
 
-    //GCM
-    private String TAG = ChooseConversationLecturerActivity.class.getSimpleName();
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
-    //
-
     private UserServiceConnectivity userServiceConnectivity;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+
 
         usernameInput = (EditText) findViewById(R.id.usernameInput);
         passwordInput = (EditText) findViewById(R.id.passwordInput);
@@ -277,81 +269,16 @@ public class LogInActivity extends AppCompatActivity {
             }
         });
 
-        //GCM
-        //MOVE TO CONVO ACTIVITIES
-        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                // checking for type intent filter
-                if (intent.getAction().equals(Config.REGISTRATION_COMPLETE)) {
-                    // gcm successfully registered
-                    // now subscribe to `global` topic to receive app wide notifications
-                    String token = intent.getStringExtra("token");
-
-                    Toast.makeText(getApplicationContext(), "GCM registration token: " + token, Toast.LENGTH_LONG).show();
-
-                } else if (intent.getAction().equals(Config.SENT_TOKEN_TO_SERVER)) {
-                    // gcm registration id is stored in our server's MySQL
-
-                    Toast.makeText(getApplicationContext(), "GCM registration token is stored in server!", Toast.LENGTH_LONG).show();
-
-                } else if (intent.getAction().equals(Config.PUSH_NOTIFICATION)) {
-                    // new push notification is received
-
-                    Toast.makeText(getApplicationContext(), "Push notification is received!", Toast.LENGTH_LONG).show();
-                }
-            }
-        };
-
-        if (checkPlayServices()) {
-            registerGCM();
-        }
-        //
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        // register GCM registration complete receiver
-        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                new IntentFilter(Config.REGISTRATION_COMPLETE));
-
-        // register new push message receiver
-        // by doing this, the activity will be notified each time a new message arrives
-        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                new IntentFilter(Config.PUSH_NOTIFICATION));
     }
 
     @Override
     protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
         super.onPause();
-    }
-
-    // starting the service to register with GCM
-    private void registerGCM() {
-        Intent intent = new Intent(this, GcmIntentService.class);
-        intent.putExtra("key", "register");
-        startService(intent);
-    }
-
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
-                        .show();
-            } else {
-                Log.i(TAG, "This device is not supported. Google Play Services not installed!");
-                Toast.makeText(getApplicationContext(), "This device is not supported. Google Play Services not installed!", Toast.LENGTH_LONG).show();
-                finish();
-            }
-            return false;
-        }
-        return true;
     }
 
     public static void buttonEffect(View button){
