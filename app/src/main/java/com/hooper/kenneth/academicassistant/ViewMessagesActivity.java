@@ -283,6 +283,39 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   });
 
                                                   scrollView.fullScroll(View.FOCUS_DOWN);
+
+                                                  String key_;
+                                                  if(LogInActivity.loggedInUserType)
+                                                  {
+                                                      key_ = ChooseConversationLecturerActivity.chosenConvoKey;
+                                                  }
+                                                  else
+                                                  {
+                                                      key_ = ChooseConversationStudentActivity.chosenConvoKey;
+                                                  }
+
+                                                  //Send Notification
+                                                  connectivity.sendMessageNotification(new ServerCallback() {
+                                                      @Override
+                                                      public void onSuccess(JSONObject result) {
+
+                                                      }
+
+                                                      @Override
+                                                      public void onSuccess(JSONArray result) {
+
+                                                      }
+
+                                                      @Override
+                                                      public void onSuccess(String result) {
+
+                                                      }
+
+                                                      @Override
+                                                      public void onError(VolleyError error) {
+
+                                                      }
+                                                  }, key_, "New Message in " + nameConvo,LogInActivity.loggedInUser);
                                               }
                                           }
                                       }

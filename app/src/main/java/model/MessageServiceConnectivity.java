@@ -220,4 +220,42 @@ public class MessageServiceConnectivity {
 
         mRequestQueue.add(req);
     }
+
+    public void sendMessageNotification(final ServerCallback callback, String key, String message, String sender)
+    {
+        String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/Notification/Post?key="+key;
+        HashMap<String, String> params = new HashMap<>();
+        params.put("Message", message);
+        params.put("SenderName", sender);
+
+        JsonObjectRequest req = new JsonObjectRequest(baseUrl, new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            callback.onSuccess(response);
+                            VolleyLog.v("Response:%n %s", response.toString(4));
+                            Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.e("Error: ", error.getMessage());
+                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
+
+        mRequestQueue.add(req);
+    }
 }

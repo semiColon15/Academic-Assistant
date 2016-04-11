@@ -3,13 +3,11 @@ package com.hooper.kenneth.academicassistant;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -33,7 +31,6 @@ import com.android.volley.VolleyError;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.hooper.kenneth.academicassistant.notifications.Device;
 import com.hooper.kenneth.academicassistant.notifications.PushNotificationClient;
-import com.hooper.kenneth.academicassistant.notifications.SettingsActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,12 +65,14 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     private ArrayList<TableRow> highlightedRows;
     private ArrayList<Integer> messageIDs;
 
+
     //NOTIFICATIONS
     private String SENDER_ID = "113571816922";
     private static final String TAG = "LecturerConvo";
     private GoogleCloudMessaging gcm;
     private Context context;
     private String registrationId;
+    public static boolean isActivityRunning;
     //
 
     private int startUpNumber;
@@ -82,27 +81,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_student);
 
-
-        //DUPLICATE INTO LECCTURER
-
-        System.out.println("STARTUP " + retrieveStartUpNumber());
-
-        startUpNumber = Integer.parseInt(retrieveStartUpNumber());
-
-        if(startUpNumber > 0)
-        {
-            System.out.println("not first time starting");
-        }
-        else if(startUpNumber == 0)
-        {
-            saveStartUpNumber("1", getApplicationContext());
-            System.out.println("SAVED start up num");
-        }
-        else if(startUpNumber < 0)
-        {
-            saveStartUpNumber("1", getApplicationContext());
-            System.out.println("SAVED start up num");
-        }
+        isActivityRunning = true;
 
         ProgressDialog pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
@@ -134,34 +113,30 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         highlightedRows = new ArrayList<>();
 
         fillConvos();
-
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(startUpNumber == 0 || startUpNumber < 0) {
-            new RegisterInBackgroundTask(context).execute();
-        }
+        new RegisterInBackgroundTask(context).execute();
+        isActivityRunning = true;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        isActivityRunning = false;
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main_menu_stu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.miInfo_stu:
                 openPopUpWindow();
@@ -177,6 +152,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 LogInActivity.saveLoggedInUserType("loggedInUserType.txt", false, getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
+                saveStartUpNumber("0", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
                 finish();
@@ -754,9 +730,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             char[] p = s.toCharArray();
             for (int i = 7; i < s.length(); i++) {
                 key += p[i];
-                System.out.println("LOOP " + p[i]);
             }
-            System.out.println("Key IS " + key);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -775,14 +749,15 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         protected String doInBackground(String... arg0) {
             String message = "";
             try {
-                if (gcm == null) {
-                    gcm = GoogleCloudMessaging.getInstance(context);
-                }
-                registrationId = gcm.register(SENDER_ID);
-                message = "Device successfully registered with GCM, notification token=" + registrationId;
-                Log.d(TAG, message);
-                sendRegistrationIdToBackend(registrationId);
-
+                //if(Integer.parseInt(retrieveStartUpNumber()) == 0 || Integer.parseInt(retrieveStartUpNumber()) < 0) {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(context);
+                    }
+                    registrationId = gcm.register(SENDER_ID);
+                    message = "Device successfully registered with GCM, notification token=" + registrationId;
+                    Log.d(TAG, message);
+                    sendRegistrationIdToBackend(registrationId);
+                //}
             } catch (IOException ex) {
                 message = "GCM registration error :" + ex.getMessage();
             }
@@ -796,16 +771,8 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
         private void sendRegistrationIdToBackend(String registrationId) {
 
-            System.out.println("IN REGISTERING METHOD");
-
             //String backendBaseUrl = readStringFromSharedPreferences(SettingsActivity.SETTINGS_KEY_BACKEND_URL);
             String backendBaseUrl = "http://academicassistantservice2.azurewebsites.net";
-            if (backendBaseUrl == null || backendBaseUrl == "")
-            {
-                return;//no backend base url set in settings, do not try to call backend
-            }
-
-            System.out.println("GOT BY NULL CHECK");
 
             PushNotificationClient client = new PushNotificationClient(backendBaseUrl);
             Device device = createDevice(registrationId);
@@ -813,7 +780,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             client.registerDevice(device, new Callback<Device>() {
                 @Override
                 public void success(Device device, Response response) {
-                    writeStringToSharedPreferences(SettingsActivity.SETTINGS_KEY_DEVICEGUID, device.DeviceGuid);
                     Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
                 }
 
@@ -834,20 +800,8 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             device.DeviceGuid = null;
             //todo set device.PlatformDescription based on Android version
             device.SubscriptionCategories = new ArrayList<>();
+            device.SubscriptionCategories.add(device.UserName);
             return device;
-        }
-
-        private String readStringFromSharedPreferences(String preferenceKey) {
-            return PreferenceManager
-                    .getDefaultSharedPreferences(context)
-                    .getString(preferenceKey, "");
-        }
-
-        private void writeStringToSharedPreferences(String preferenceKey, String value) {
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(preferenceKey, value);
-            editor.commit();
         }
     }
 }
