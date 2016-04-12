@@ -72,7 +72,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     private GoogleCloudMessaging gcm;
     private Context context;
     private String registrationId;
-    public static boolean isActivityRunning;
     //
 
     private int startUpNumber;
@@ -80,8 +79,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_student);
-
-        isActivityRunning = true;
 
         ProgressDialog pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
@@ -119,13 +116,11 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         new RegisterInBackgroundTask(context).execute();
-        isActivityRunning = true;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        isActivityRunning = false;
     }
 
 

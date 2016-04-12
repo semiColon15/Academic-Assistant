@@ -52,13 +52,7 @@ public class GcmIntentService extends IntentService {
     }
 
     private void createNotification(String message, String senderName) {
-        //boolean isActivityRunning;
         Intent notificationIntent = new Intent(this, LogInActivity.class);
-        /*if(LogInActivity.loggedInUserType) {
-            isActivityRunning = ChooseConversationLecturerActivity.isActivityRunning;
-        }else {
-            isActivityRunning = ChooseConversationStudentActivity.isActivityRunning;
-        }*/
             notificationIntent.setAction(Intent.ACTION_MAIN);
             notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -83,5 +77,18 @@ public class GcmIntentService extends IntentService {
             builder.setSound(uri);
 
             notificationManager.notify(NOTIFICATION_ID, builder.build());
+
+        updateMyActivity(getApplicationContext());
+    }
+
+    static void updateMyActivity(Context context) {
+
+        Intent intent = new Intent("unique_name");
+
+        //put whatever data you want to send, if any
+        //intent.putExtra("message", message);
+
+        //send broadcast
+        context.sendBroadcast(intent);
     }
 }

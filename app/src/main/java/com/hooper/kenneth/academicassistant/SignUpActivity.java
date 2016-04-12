@@ -27,10 +27,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 import model.ServerCallback;
 import model.User;
@@ -114,8 +112,6 @@ public class SignUpActivity extends AppCompatActivity {
 
                 if(performLocalChecks()) {
                     final User user = new User(emailAddress.getText().toString().trim(), password.getText().toString().trim(), confirmPassword.getText().toString().trim(), isAdminLevel);
-
-                    //TODO CHECK USER IS REGISTERED BEFORE PROCEEDING    I.E. THAT INTERNET CONNECTION EXISTS
 
                     final ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                     final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();

@@ -1,11 +1,14 @@
 package com.hooper.kenneth.academicassistant;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -237,14 +240,21 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   final TextView message = new TextView(getApplicationContext());
                                                   message.setText(messageText.getText().toString());
                                                   message.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
-                                                  message.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
+                                                  if (Build.VERSION.SDK_INT < 23) {
+                                                      message.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
+                                                  } else {
+                                                      message.setTextAppearance(R.style.messageTextStyle);
+                                                  }
 
                                                   final TextView sender = new TextView(getApplicationContext());
                                                   sender.setText(LogInActivity.loggedInUser);
-                                                  //sender.setText(LogInActivity.loggedInUser + "\t");
                                                   sender.setPadding(0, 0, 10, 0);
-                                                  sender.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                                                  sender.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+                                                  sender.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.5f));
+                                                  if (Build.VERSION.SDK_INT < 23) {
+                                                      sender.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+                                                  } else {
+                                                      sender.setTextAppearance(R.style.senderTextStyle);
+                                                  }
 
 
                                                   tableRow.setLongClickable(true);
@@ -259,7 +269,11 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   final TextView timeStamp = new TextView(getApplicationContext());
                                                   timeStamp.setText(time);
                                                   timeStamp.setPadding(20, 0, 0, 0);
-                                                  timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
+                                                  if (Build.VERSION.SDK_INT < 23) {
+                                                      timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
+                                                  } else {
+                                                      timeStamp.setTextAppearance(R.style.AppTheme);
+                                                  }
                                                   timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
                                                   dateTimeRow.addView(timeStamp);
@@ -340,8 +354,12 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 final TextView senderInitial = new TextView(getApplicationContext());
                 senderInitial.setText(allSenders.get(i));
                 senderInitial.setPadding(0, 0, 10, 0);
-                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.5f));
+                if (Build.VERSION.SDK_INT < 23) {
+                    senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+                } else {
+                    senderInitial.setTextAppearance(R.style.senderTextStyle);
+                }
 
                 final TextView messageInitial = new TextView(getApplicationContext());
                 messageInitial.setText(allMessages.get(i));
@@ -682,4 +700,30 @@ public class ViewMessagesActivity extends AppCompatActivity {
         });
         buttonEffect(closePopup);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getApplicationContext().registerReceiver(mMessageReceiver, new IntentFilter("unique_name"));
+    }
+
+    //Must unregister onPause()
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getApplicationContext().unregisterReceiver(mMessageReceiver);
+    }
+
+
+    //This is the handler that will manager to process the broadcast intent
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Toast.makeText(getApplicationContext(), "Refreshed page", Toast.LENGTH_LONG).show();
+            Intent f = new Intent(getApplicationContext(), ViewMessagesActivity.class);
+            startActivity(f);
+            finish();
+        }
+    };
 }

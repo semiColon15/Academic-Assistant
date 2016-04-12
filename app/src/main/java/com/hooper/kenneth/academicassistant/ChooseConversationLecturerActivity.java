@@ -77,14 +77,11 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     private GoogleCloudMessaging gcm;
     private Context context;
     private String registrationId;
-    public static boolean isActivityRunning;
     //
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_lecturer);
-
-        isActivityRunning = true;
 
         ProgressDialog pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
@@ -124,13 +121,11 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         new RegisterInBackgroundTask(context).execute();
-        isActivityRunning = true;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        isActivityRunning = false;
     }
 
     @Override
@@ -163,6 +158,11 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 LogInActivity.saveLoggedInUserType("loggedInUserType.txt", false, getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
+
+
+                //TOdo unregister with GCM
+                unregister(getApplicationContext());
+
                 saveStartUpNumber("0", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
@@ -841,6 +841,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             device.SubscriptionCategories = new ArrayList<>();
             device.SubscriptionCategories.add(device.UserName);
             return device;
+        }
+    }
+
+    public void unregister(Context context) {
+        try {
+            gcm.unregister();
+        }catch(IOException d) {
         }
     }
 }
