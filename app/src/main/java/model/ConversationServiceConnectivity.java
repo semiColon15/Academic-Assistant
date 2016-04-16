@@ -127,6 +127,7 @@ public class ConversationServiceConnectivity {
     {
         String url = "Conversations/GetConversationForUser?email="+email;
         String Url = baseUrl + url;
+        pDialog.setMessage("Loading Conversations...");
         showpDialog();
 
         JsonArrayRequest req = new JsonArrayRequest(Url,
@@ -202,6 +203,11 @@ public class ConversationServiceConnectivity {
             }
         };
 
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(req);
     }
 
@@ -248,7 +254,7 @@ public class ConversationServiceConnectivity {
         };
 
         req.setRetryPolicy(new DefaultRetryPolicy(
-                5000,
+                10000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 

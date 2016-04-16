@@ -93,6 +93,11 @@ public class MessageServiceConnectivity {
             }
         };
 
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         mRequestQueue.add(req);
     }
 
@@ -125,6 +130,11 @@ public class MessageServiceConnectivity {
                 return headers;
             }
         };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Adding request to request queue
         mRequestQueue.add(req);
@@ -178,6 +188,11 @@ public class MessageServiceConnectivity {
                 return headers;
             }
         };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         mRequestQueue.add(req);
     }
@@ -255,6 +270,11 @@ public class MessageServiceConnectivity {
                 return headers;
             }
         };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         mRequestQueue.add(req);
     }

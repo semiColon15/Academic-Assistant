@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="470dp"
-    android:layout_height="450dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="#CFD8DC"
     android:id="@+id/glayout2">
 
@@ -31,7 +31,7 @@
         android:layout_below="@+id/question_info"
         android:layout_marginTop="40dp"
         android:textColor="@color/white"
-        android:background="@color/blueGrey"/>
+        android:background="@drawable/custom_button"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -42,6 +42,6 @@
         android:layout_marginTop="40dp"
         android:layout_marginLeft="100dp"
         android:textColor="@color/white"
-        android:background="@color/blueGrey"/>
+        android:background="@drawable/custom_button"/>
 
 </RelativeLayout>

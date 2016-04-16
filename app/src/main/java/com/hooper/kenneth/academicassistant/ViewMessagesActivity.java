@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -48,12 +51,13 @@ import model.*;
 
 public class ViewMessagesActivity extends AppCompatActivity {
 
-    String apiKey = "AIzaSyBbsP89ibvkKUEr8F6fOFKoO3fCZXZOfD8";
+   /* String apiKey = "AIzaSyBbsP89ibvkKUEr8F6fOFKoO3fCZXZOfD8";
     String senderID = "113571816922";
-    String DefaultFullAccessSignatrue = "Endpoint=sb://academicassistantbus.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Dp2/BtK9foRgfapH+1dpmMwlHtA6KFvQg6ieMEixXpM=";
+    String DefaultFullAccessSignatrue = "Endpoint=sb://academicassistantbus.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Dp2/BtK9foRgfapH+1dpmMwlHtA6KFvQg6ieMEixXpM=";*/
 
     private EditText messageText;
     private MessageServiceConnectivity connectivity;
+    private UserServiceConnectivity u;
     private TableLayout tableLayout;
     private ScrollView scrollView;
     private String keyConvo;
@@ -69,6 +73,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
     private ImageView deleteIcon;
     private int deletePos;
     private int tablePos;
+    private int personDeleteIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +81,13 @@ public class ViewMessagesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_messages);
 
         messageText = (EditText) findViewById(R.id.messageText);
+        try {
+            messageText.setText(this.getIntent().getStringExtra("text"));
+        } catch(NullPointerException e)
+        {
+            Toast.makeText(getApplicationContext(), "IN CATCH", Toast.LENGTH_SHORT);
+        }
+
 
         ImageView sendButton = (ImageView) findViewById(R.id.send_button);
         sendButton.setImageResource(R.drawable.ic_send_black_24dp);
@@ -114,87 +126,39 @@ public class ViewMessagesActivity extends AppCompatActivity {
         mTitle.setText(nameConvo);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
-        final View activityRootView = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
+        /*Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        final int height = size.y;*/
+
+        /*final View activityRootView = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
                 ViewGroup.LayoutParams params = tableLayout.getLayoutParams();
                 ViewGroup.LayoutParams params2 = scrollView.getLayoutParams();
-                if (heightDiff > 300) { // if more than 100 pixels, its probably a keyboard...
+                if (heightDiff > 100) {
                     params.height = 300;
                     params2.height = 300;
                     tableLayout.setLayoutParams(params);
                     scrollView.setLayoutParams(params2);
-                } else if (heightDiff < 300) {
-                    params.height = 600;
-                    params2.height = 600;
+                }
+                else if(heightDiff < 100)
+                {
+                    params.height = (height-(height/8));
+                    params2.height = (height-(height/8));
                     tableLayout.setLayoutParams(params);
                     scrollView.setLayoutParams(params2);
                 }
             }
-        });
+        });*/
+
+        u = new UserServiceConnectivity(getApplicationContext(), pDialog);
 
         connectivity = new MessageServiceConnectivity(getApplicationContext(), pDialog);
-        connectivity.setInitialViews(new ServerCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
+        setViews();
 
-            }
-
-            @Override
-            public void onSuccess(JSONArray response) {
-                try {
-                    allSenders = new ArrayList<>();
-                    allMessages = new ArrayList<>();
-                    allMessageIDs = new ArrayList<>();
-                    allTimeStamps = new ArrayList<>();
-                    for (int i = 0; i < response.length(); i++) {
-
-                        JSONObject message = (JSONObject) response.get(i);
-                        String key = message.getString("ConversationKey");
-                        String type;
-                        if (LogInActivity.loggedInUserType) {
-                            type = ChooseConversationLecturerActivity.chosenConvoKey;
-                        } else {
-                            type = ChooseConversationStudentActivity.chosenConvoKey;
-                        }
-                        if (key.equalsIgnoreCase(type)) {
-                            String sender = message.getString("Sender");
-                            String message_ = message.getString("MessageContent");
-                            int messageID = message.getInt("MessageID");
-                            String timeStamp = message.getString("TimeStamp");
-                            allSenders.add(sender);
-                            allMessages.add(message_);
-                            allMessageIDs.add(messageID);
-                            allTimeStamps.add(timeStamp);
-                        }
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-
-                setInitialViews();
-                scrollView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        scrollView.fullScroll(View.FOCUS_DOWN);
-                    }
-                });
-            }
-
-            @Override
-            public void onSuccess(String result) {
-
-            }
-
-            @Override
-            public void onError(VolleyError error) {
-
-            }
-        });
 
         sendButton.setOnClickListener(new View.OnClickListener() {
                                           public void onClick(View v) {
@@ -336,13 +300,76 @@ public class ViewMessagesActivity extends AppCompatActivity {
         );
     }
 
+    public void setViews()
+    {
+        connectivity.setInitialViews(new ServerCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+
+            }
+
+            @Override
+            public void onSuccess(JSONArray response) {
+                try {
+                    allSenders = new ArrayList<>();
+                    allMessages = new ArrayList<>();
+                    allMessageIDs = new ArrayList<>();
+                    allTimeStamps = new ArrayList<>();
+                    for (int i = 0; i < response.length(); i++) {
+
+                        JSONObject message = (JSONObject) response.get(i);
+                        String key = message.getString("ConversationKey");
+                        String type;
+                        if (LogInActivity.loggedInUserType) {
+                            type = ChooseConversationLecturerActivity.chosenConvoKey;
+                        } else {
+                            type = ChooseConversationStudentActivity.chosenConvoKey;
+                        }
+                        if (key.equalsIgnoreCase(type)) {
+                            String sender = message.getString("Sender");
+                            String message_ = message.getString("MessageContent");
+                            int messageID = message.getInt("MessageID");
+                            String timeStamp = message.getString("TimeStamp");
+                            allSenders.add(sender);
+                            allMessages.add(message_);
+                            allMessageIDs.add(messageID);
+                            allTimeStamps.add(timeStamp);
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+
+                setInitialViews();
+                scrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollView.fullScroll(View.FOCUS_DOWN);
+                    }
+                });
+            }
+
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+
+            }
+        });
+    }
+
     public void setInitialViews()
     {
         for (int i = 0; i < allMessages.size(); i++) {
             if(allSenders != null){
 
                 final TableRow tableRow = new TableRow(getApplicationContext());
-                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, 1.2f));
 
                 if(allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
                     tableRow.setBackgroundResource(R.drawable.bubble_green);
@@ -353,8 +380,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                 final TextView senderInitial = new TextView(getApplicationContext());
                 senderInitial.setText(allSenders.get(i));
-                senderInitial.setPadding(0, 0, 10, 0);
-                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.5f));
+                senderInitial.setPadding(0, 0, 0, 0);
+                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.6f));
                 if (Build.VERSION.SDK_INT < 23) {
                     senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
                 } else {
@@ -363,7 +390,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                 final TextView messageInitial = new TextView(getApplicationContext());
                 messageInitial.setText(allMessages.get(i));
-                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.5f));
                 messageInitial.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
 
                 tableRow.setLongClickable(true);
@@ -556,7 +583,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
             }
             highlightedRows.clear();
         }
-        else if(numPressed == 1 && !wasHighlighted)
+        else if(numPressed == 1)// && !wasHighlighted)
         {
             finish();
         }
@@ -568,14 +595,12 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_messages, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.miInfo_msg:
                 openPopUpWindow();
@@ -611,20 +636,17 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_message_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 850, true);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/4), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
-
-        //TODO: CHECK TOOLBAR WORKING WITH LAYOUT.
-        /*Toolbar toolbar2;
-        toolbar2 = (Toolbar) layouyt.findViewById(R.id.tool_info);
-        setSupportActionBar(toolbar2);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        TextView mTitle = (TextView) toolbar2.findViewById(R.id.toolbar_title);
-        mTitle.setText("Info");
-        mTitle.setShadowLayer(10, 5, 5, Color.BLACK);*/
 
         c.getConversation(new ServerCallback() {
             @Override
@@ -642,21 +664,40 @@ public class ViewMessagesActivity extends AppCompatActivity {
                     }
                     groupAdmin = result.getString("Administrator");
 
-                    TableLayout tableLayout = (TableLayout) pwindo.getContentView().findViewById(R.id.convos2);
+                    final TableLayout tableLayout = (TableLayout) pwindo.getContentView().findViewById(R.id.convos2);
 
                     if (userList != null) {
                         for (int i = 0; i < userList.size(); i++) {
                             if (userList.get(i) != null) {
                                 final TableRow tableRow = new TableRow(getApplicationContext());
-                                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
                                 final TextView member = new TextView(getApplicationContext());
                                 member.setText(userList.get(i));
                                 member.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                                 member.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
 
+                                ImageView removeFromGroupIcon = new ImageView(getBaseContext());
+                                removeFromGroupIcon.setImageResource(R.drawable.ic_delete_black_24dp);
+                                removeFromGroupIcon.setPadding(20, 0, 0, 0);
+                                removeFromGroupIcon.setClickable(true);
+
+
                                 tableRow.addView(member);
+                                if(groupAdmin.equalsIgnoreCase(LogInActivity.loggedInUser))
+                                {
+                                    tableRow.addView(removeFromGroupIcon);
+                                }
                                 tableLayout.addView(tableRow);
+
+                                final int f = i;
+                                removeFromGroupIcon.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        openConfirmLeaveGroupPopUp(tableLayout);
+                                        personDeleteIndex = f;
+                                    }
+                                });
                             }
                         }
                     }
@@ -707,7 +748,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
         getApplicationContext().registerReceiver(mMessageReceiver, new IntentFilter("unique_name"));
     }
 
-    //Must unregister onPause()
     @Override
     protected void onPause() {
         super.onPause();
@@ -720,10 +760,108 @@ public class ViewMessagesActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Toast.makeText(getApplicationContext(), "Refreshed page", Toast.LENGTH_LONG).show();
-            Intent f = new Intent(getApplicationContext(), ViewMessagesActivity.class);
-            startActivity(f);
-            finish();
+            tableLayout.removeAllViews();
+            setViews();
         }
     };
+
+    public void openConfirmLeaveGroupPopUp(TableLayout d)
+    {
+        LayoutInflater inflater = (LayoutInflater) ViewMessagesActivity.this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
+                (ViewGroup) findViewById(R.id.glayout2));
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        //TODO see if this works
+        final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/4), true);
+
+        pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
+        pwindo.setBackgroundDrawable(new BitmapDrawable());
+
+        final String userNameToRemove = ((TextView) ((TableRow) d.getChildAt(personDeleteIndex)).getChildAt(0)).getText().toString();
+
+        TextView text2 = (TextView) layout.findViewById(R.id.question_info);
+        text2.setText("Are you sure you want to remove " + userNameToRemove + " from this conversation?");
+
+        Button confirmLeave = (Button) layout.findViewById(R.id.delete_info);
+        confirmLeave.setText("Leave Group");
+        confirmLeave.setOnClickListener(new View.OnClickListener() {
+
+            User user;
+            public void onClick(View v) {
+
+                u.checkUserAdminLevel(new ServerCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        try {
+                            String email = result.getString("Email");
+                            String password = result.getString("Password");
+                            Boolean adminLevel_ = result.getBoolean("Admin");
+                            ArrayList<Conversation> convos = new ArrayList<>();
+
+                            user = new User(email, password, adminLevel_, convos);
+                        }
+                        catch(JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if(user != null) {
+                            c.RemoveUserFromGroup(new ServerCallback() {
+                                @Override
+                                public void onSuccess(JSONObject result) {
+                                    Toast.makeText(getApplicationContext(), "Group left.", Toast.LENGTH_LONG).show();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                    startActivity(f);
+                                    finish();
+                                }
+
+                                @Override
+                                public void onSuccess(JSONArray result) {
+                                }
+
+                                @Override
+                                public void onSuccess(String result) {
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Toast.makeText(getApplicationContext(), "Error, unable to leave group...", Toast.LENGTH_LONG).show();
+                                }
+                            }, keyConvo, user);
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+
+                    }
+                }, userNameToRemove);
+
+                pwindo.dismiss();
+            }
+        });
+
+        Button cancelLeave = (Button) layout.findViewById(R.id.cancel_info);
+        cancelLeave.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                pwindo.dismiss();
+            }
+        });
+        buttonEffect(cancelLeave);
+    }
 }

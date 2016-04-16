@@ -87,7 +87,7 @@ public class JoinGroupActivity extends AppCompatActivity {
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
     }
 
-    @Override
+/*    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_create_group, menu);
@@ -106,7 +106,7 @@ public class JoinGroupActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
+    }*/
 
     @Override
     public void onBackPressed()

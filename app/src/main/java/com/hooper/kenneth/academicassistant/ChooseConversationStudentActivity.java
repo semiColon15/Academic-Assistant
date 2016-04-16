@@ -147,6 +147,9 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 LogInActivity.saveLoggedInUserType("loggedInUserType.txt", false, getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
+
+                unregister();
+
                 saveStartUpNumber("0", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
@@ -176,6 +179,13 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    public void unregister() {
+        try {
+            gcm.unregister();
+        }catch(IOException d) {
+        }
     }
 
     public void fillConvos() {
@@ -749,12 +759,12 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                         gcm = GoogleCloudMessaging.getInstance(context);
                     }
                     registrationId = gcm.register(SENDER_ID);
-                    message = "Device successfully registered with GCM, notification token=" + registrationId;
+                    //message = "Device successfully registered with GCM, notification token=" + registrationId;
                     Log.d(TAG, message);
                     sendRegistrationIdToBackend(registrationId);
                 //}
             } catch (IOException ex) {
-                message = "GCM registration error :" + ex.getMessage();
+                //message = "GCM registration error :" + ex.getMessage();
             }
             return message;
         }
@@ -775,12 +785,12 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             client.registerDevice(device, new Callback<Device>() {
                 @Override
                 public void success(Device device, Response response) {
-                    Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void failure(RetrofitError retrofitError) {
-                    Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
 

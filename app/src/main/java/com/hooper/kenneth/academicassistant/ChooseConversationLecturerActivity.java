@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -69,14 +71,11 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     private ImageView leaveGroupIcon;
     private String admin;
     private String deleteKey;
-    private int startUpNumber;
 
     //NOTIFICATIONS
-    private String SENDER_ID = "113571816922";
     private static final String TAG = "LecturerConvo";
     private GoogleCloudMessaging gcm;
     private Context context;
-    private String registrationId;
     //
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,9 +158,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
 
-
-                //TOdo unregister with GCM
-                unregister(getApplicationContext());
+                unregister();
 
                 saveStartUpNumber("0", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
@@ -417,7 +414,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/2), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -508,7 +512,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/2), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -684,7 +695,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -777,6 +795,8 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
     private class RegisterInBackgroundTask extends AsyncTask<String,String,String> {
         private Context context;
+        private String SENDER_ID = "113571816922";
+        private String registrationId;
 
         public RegisterInBackgroundTask(Context context) {
             this.context = context;
@@ -786,25 +806,21 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         protected String doInBackground(String... arg0) {
             String message = "";
             try {
-                //if(Integer.parseInt(retrieveStartUpNumber()) == 0 || Integer.parseInt(retrieveStartUpNumber()) < 0) {
-                    if (gcm == null) {
-                        gcm = GoogleCloudMessaging.getInstance(context);
-                    }
-                    registrationId = gcm.register(SENDER_ID);
-                    message = "Device successfully registered with GCM, notification token=" + registrationId;
-                    Log.d(TAG, message);
-                    sendRegistrationIdToBackend(registrationId);
-                //}
+                if (gcm == null) {gcm = GoogleCloudMessaging.getInstance(context);}
+                registrationId = gcm.register(SENDER_ID);
+                //message = "Device successfully registered with GCM, notification token=" + registrationId;
+                Log.d(TAG, message);
+                sendRegistrationIdToBackend(registrationId);
 
             } catch (IOException ex) {
-                message = "GCM registration error :" + ex.getMessage();
+                //message = "GCM registration error :" + ex.getMessage();
             }
             return message;
         }
 
         @Override
         protected void onPostExecute(String msg) {
-            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
         }
 
         private void sendRegistrationIdToBackend(String registrationId) {
@@ -819,12 +835,12 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             client.registerDevice(device, new Callback<Device>() {
                 @Override
                 public void success(Device device, Response response) {
-                    Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void failure(RetrofitError retrofitError) {
-                    Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -837,14 +853,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             device.Token = registrationId;
             device.UserName = LogInActivity.loggedInUser;
             device.DeviceGuid = null;
-            //todo set device.PlatformDescription based on Android version
             device.SubscriptionCategories = new ArrayList<>();
             device.SubscriptionCategories.add(device.UserName);
             return device;
         }
     }
 
-    public void unregister(Context context) {
+    public void unregister() {
         try {
             gcm.unregister();
         }catch(IOException d) {

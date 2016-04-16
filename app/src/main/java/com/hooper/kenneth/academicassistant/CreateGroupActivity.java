@@ -187,7 +187,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         }
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_create_group, menu);
@@ -206,7 +206,7 @@ public class CreateGroupActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
+    }*/
 
     public static void buttonEffect(View button){
         button.setOnTouchListener(new View.OnTouchListener() {

@@ -12,8 +12,9 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="450dp"
         android:layout_below="@+id/tool2"
+        android:paddingTop="20dp"
         android:id="@+id/scroll"
         android:scrollbars="vertical"
         android:orientation="vertical">
@@ -28,14 +29,6 @@
             </TableLayout>
     </ScrollView>
 
-    <!--<EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/messageText"
-        android:layout_above="@+id/sendButton"
-        android:background="@color/white"
-        android:inputType="textCapSentences|textMultiLine"
-        android:layout_centerHorizontal="true" />-->
     <LinearLayout
         android:id="@+id/footer_section"
         android:layout_width="match_parent"
@@ -53,7 +46,7 @@
         android:fadeScrollbars="false"
         android:layout_marginLeft="15dp"
         android:layout_weight="1"
-        android:inputType="textMultiLine"
+        android:inputType="textCapSentences|textMultiLine"
         android:maxLines="4"
         android:minLines="1"
         android:textColor="@android:color/black" />
@@ -65,15 +58,4 @@
         android:layout_gravity="center_vertical" />
     </LinearLayout>
 
-
-    <!--<Button
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:text="Send Message"
-        android:textColor="@color/white"
-        android:background="@color/blueGrey"
-        android:id="@+id/sendButton"
-        android:layout_below="@+id/footer_section"
-        android:layout_marginBottom="10dp"
-        android:layout_centerHorizontal="true" />-->
 </RelativeLayout>

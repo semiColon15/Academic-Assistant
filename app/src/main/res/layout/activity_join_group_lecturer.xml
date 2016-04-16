@@ -17,7 +17,7 @@
         android:text="Join Group"
         android:id="@+id/joinGroup1"
         android:textColor="@color/white"
-        android:background="@color/blueGrey"
+        android:background="@drawable/custom_button"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
