@@ -44,7 +44,7 @@ public class JoinGroupActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(JSONObject result) {
 
-                        Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
                         if (LogInActivity.loggedInUserType) {
                             Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                             startActivity(t);

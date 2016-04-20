@@ -175,7 +175,7 @@ public class LogInActivity extends AppCompatActivity {
                                             LogInActivity.saveToken("token.txt", token, getApplicationContext());
 
                                             VolleyLog.v("Response:%n %s", response);
-                                            Toast.makeText(getApplicationContext(), "Token Recieved", Toast.LENGTH_LONG).show();
+                                            //Toast.makeText(getApplicationContext(), "Token Recieved", Toast.LENGTH_LONG).show();
 
                                         } catch (Exception e) {
                                             e.printStackTrace();

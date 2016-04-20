@@ -103,7 +103,7 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Connection Error", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -183,7 +183,7 @@ public class ConversationServiceConnectivity {
 
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(context, "ERROR creating group", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Error creating group..", Toast.LENGTH_LONG).show();
                             hidepDialog();
                         }
                     }
@@ -191,7 +191,7 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Connection error", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -229,10 +229,10 @@ public class ConversationServiceConnectivity {
                             hidepDialog();
 
                             VolleyLog.v("Response:%n %s", response.toString(4));
-                            Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
+                            //.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
+                           // Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
                             hidepDialog();
                         }
                     }
@@ -241,7 +241,7 @@ public class ConversationServiceConnectivity {
             public void onErrorResponse(VolleyError error) {
                 callback.onError(error);
                 VolleyLog.e("Error: ", error.getMessage());
-                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Connection error...", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){

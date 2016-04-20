@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,12 +21,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -81,13 +78,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_messages);
 
         messageText = (EditText) findViewById(R.id.messageText);
-        try {
-            messageText.setText(this.getIntent().getStringExtra("text"));
-        } catch(NullPointerException e)
-        {
-            Toast.makeText(getApplicationContext(), "IN CATCH", Toast.LENGTH_SHORT);
-        }
-
 
         ImageView sendButton = (ImageView) findViewById(R.id.send_button);
         sendButton.setImageResource(R.drawable.ic_send_black_24dp);
@@ -108,6 +98,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
             nameConvo = ChooseConversationStudentActivity.chosenGroupName;
         }
 
+        System.out.println("CHOSEN KEY IS " + keyConvo + " " + nameConvo);
+
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
 
         highlightedRows = new ArrayList<>();
@@ -126,38 +118,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
         mTitle.setText(nameConvo);
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
 
-        /*Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        final int height = size.y;*/
-
-        /*final View activityRootView = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
-        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
-                ViewGroup.LayoutParams params = tableLayout.getLayoutParams();
-                ViewGroup.LayoutParams params2 = scrollView.getLayoutParams();
-                if (heightDiff > 100) {
-                    params.height = 300;
-                    params2.height = 300;
-                    tableLayout.setLayoutParams(params);
-                    scrollView.setLayoutParams(params2);
-                }
-                else if(heightDiff < 100)
-                {
-                    params.height = (height-(height/8));
-                    params2.height = (height-(height/8));
-                    tableLayout.setLayoutParams(params);
-                    scrollView.setLayoutParams(params2);
-                }
-            }
-        });*/
-
         u = new UserServiceConnectivity(getApplicationContext(), pDialog);
 
         connectivity = new MessageServiceConnectivity(getApplicationContext(), pDialog);
-        setViews();
+        getViewInfo();
 
 
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -173,7 +137,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                               allTimeStamps.add(time);
                                               System.out.println("TIME = " + time);
 
-                                              if (!messageText.getText().toString().equalsIgnoreCase("")) {
+                                              if (!messageText.getText().toString().equalsIgnoreCase("") && messageText.getText().toString().trim().length() > 0) {
 
                                                   connectivity.SendMessage(new ServerCallback() {
                                                       @Override
@@ -197,53 +161,72 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                       }
                                                   }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, time, keyConvo);
 
-                                                  final TableRow tableRow = new TableRow(getApplicationContext());
-                                                  tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
-                                                  tableRow.setBackgroundResource(R.drawable.bubble_green);
+                                                  final TableRow senderRow = new TableRow(getApplicationContext());
+                                                  senderRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
-                                                  final TextView message = new TextView(getApplicationContext());
-                                                  message.setText(messageText.getText().toString());
-                                                  message.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
-                                                  if (Build.VERSION.SDK_INT < 23) {
-                                                      message.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
-                                                  } else {
-                                                      message.setTextAppearance(R.style.messageTextStyle);
-                                                  }
-
-                                                  final TextView sender = new TextView(getApplicationContext());
-                                                  sender.setText(LogInActivity.loggedInUser);
-                                                  sender.setPadding(0, 0, 10, 0);
-                                                  sender.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.5f));
-                                                  if (Build.VERSION.SDK_INT < 23) {
-                                                      sender.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
-                                                  } else {
-                                                      sender.setTextAppearance(R.style.senderTextStyle);
-                                                  }
+                                                  final TextView senderInitial = new TextView(getApplicationContext());
+                                                  senderInitial.setText(LogInActivity.loggedInUser);
+                                                  senderInitial.setPadding(20, 0, 0, 0);
+                                                  senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+                                                  senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+                                                  senderInitial.setTextColor(getResources().getColor(R.color.colorPrimary));
 
 
-                                                  tableRow.setLongClickable(true);
-                                                  tableRow.setGravity(Gravity.CENTER);
+                                                  final TableRow messageRow = new TableRow(getApplicationContext());
+                                                  messageRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
-                                                  tableRow.addView(sender);
-                                                  tableRow.addView(message);
+                                                  final TextView messageInitial = new TextView(getApplicationContext());
+                                                  messageInitial.setText(messageText.getText().toString());
+                                                  messageInitial.setPadding(0, 0, 0, 10);
+                                                  messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+                                                  messageInitial.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
+
 
                                                   final TableRow dateTimeRow = new TableRow(getApplicationContext());
-                                                  tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                                                  dateTimeRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
                                                   final TextView timeStamp = new TextView(getApplicationContext());
                                                   timeStamp.setText(time);
                                                   timeStamp.setPadding(20, 0, 0, 0);
-                                                  if (Build.VERSION.SDK_INT < 23) {
-                                                      timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
-                                                  } else {
-                                                      timeStamp.setTextAppearance(R.style.AppTheme);
-                                                  }
-                                                  timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                                                  timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
+                                                  timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+
+                                                  messageInitial.setBackgroundResource(R.drawable.chat_bubble_me);
+                                                  messageInitial.setPadding(20, 20, 20, 20);
+                                                  messageRow.setPadding(80, 10, 20, 10);
+                                                  timeStamp.setGravity(Gravity.END);
+                                                  timeStamp.setPadding(0, 0, 20, 0);
+                                                  senderInitial.setGravity(Gravity.END);
+                                                  senderInitial.setPadding(0, 0, 20, 0);
+
+
+                                                  messageRow.setLongClickable(true);
 
                                                   dateTimeRow.addView(timeStamp);
+                                                  senderRow.addView(senderInitial);
+                                                  messageRow.addView(messageInitial);
 
                                                   tableLayout.addView(dateTimeRow);
-                                                  tableLayout.addView(tableRow);
+                                                  tableLayout.addView(senderRow);
+                                                  tableLayout.addView(messageRow);
+
+                                                  messageRow.setOnLongClickListener(new View.OnLongClickListener() {
+                                                      @Override
+                                                      public boolean onLongClick(View v) {
+                                                          for (int g = 0; g < tableLayout.getChildCount(); g++) {
+                                                              if (v == tableLayout.getChildAt(g)) {
+                                                                  highlightRow(messageRow);
+                                                                  deletePos = (g - 1) / 3;
+                                                                  tablePos = (deletePos * 3) + 2;
+                                                                  System.out.println("DELETE POS " + deletePos);
+                                                                  System.out.println("TABLE POS " + tablePos);
+                                                                  return true;
+                                                              }
+                                                          }
+                                                          return true;
+                                                      }
+                                                  });
+
                                                   messageText.setText("");
 
                                                   if (LogInActivity.loggedInUserType) {
@@ -251,14 +234,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                                   } else {
                                                       ChooseConversationStudentActivity.saveKey("", getApplicationContext());
                                                   }
-
-                                                  tableRow.setOnLongClickListener(new View.OnLongClickListener() {
-                                                      @Override
-                                                      public boolean onLongClick(View v) {
-                                                          highlightRow(tableRow);
-                                                          return true;
-                                                      }
-                                                  });
 
                                                   scrollView.fullScroll(View.FOCUS_DOWN);
 
@@ -300,9 +275,72 @@ public class ViewMessagesActivity extends AppCompatActivity {
         );
     }
 
-    public void setViews()
+    public void getViewInfo()
     {
         connectivity.setInitialViews(new ServerCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+
+            }
+
+            @Override
+            public void onSuccess(JSONArray response) {
+                try {
+                    allSenders = new ArrayList<>();
+                    allMessages = new ArrayList<>();
+                    allMessageIDs = new ArrayList<>();
+                    allTimeStamps = new ArrayList<>();
+                    for (int i = 0; i < response.length(); i++) {
+
+                        JSONObject message = (JSONObject) response.get(i);
+                        String key = message.getString("ConversationKey");
+                        String type;
+                        if (LogInActivity.loggedInUserType) {
+                            type = ChooseConversationLecturerActivity.chosenConvoKey;
+                        } else {
+                            type = ChooseConversationStudentActivity.chosenConvoKey;
+                        }
+                        if (key.equalsIgnoreCase(type)) {
+                            String sender = message.getString("Sender");
+                            String message_ = message.getString("MessageContent");
+                            int messageID = message.getInt("MessageID");
+                            String timeStamp = message.getString("TimeStamp");
+                            allSenders.add(sender);
+                            allMessages.add(message_);
+                            allMessageIDs.add(messageID);
+                            allTimeStamps.add(timeStamp);
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+
+                setInitialViews();
+                scrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollView.fullScroll(View.FOCUS_DOWN);
+                    }
+                });
+            }
+
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+
+            }
+        });
+    }
+
+    public void setViewsRefresh()
+    {
+        connectivity.setInitialViewsNoDialog(new ServerCallback() {
             @Override
             public void onSuccess(JSONObject result) {
 
@@ -368,59 +406,74 @@ public class ViewMessagesActivity extends AppCompatActivity {
         for (int i = 0; i < allMessages.size(); i++) {
             if(allSenders != null){
 
-                final TableRow tableRow = new TableRow(getApplicationContext());
-                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, 1.2f));
-
-                if(allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
-                    tableRow.setBackgroundResource(R.drawable.bubble_green);
-                }
-                else {
-                    tableRow.setBackgroundResource(R.drawable.bubble_yellow);
-                }
+                final TableRow senderRow = new TableRow(getApplicationContext());
+                senderRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
                 final TextView senderInitial = new TextView(getApplicationContext());
                 senderInitial.setText(allSenders.get(i));
-                senderInitial.setPadding(0, 0, 0, 0);
-                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 0.6f));
-                if (Build.VERSION.SDK_INT < 23) {
-                    senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
-                } else {
-                    senderInitial.setTextAppearance(R.style.senderTextStyle);
-                }
+                senderInitial.setPadding(20, 0, 0, 0);
+                senderInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+                senderInitial.setTextAppearance(getApplicationContext(), R.style.senderTextStyle);
+                senderInitial.setTextColor(getResources().getColor(R.color.colorPrimary));
+
+
+                final TableRow messageRow = new TableRow(getApplicationContext());
+                messageRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
                 final TextView messageInitial = new TextView(getApplicationContext());
                 messageInitial.setText(allMessages.get(i));
-                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1.5f));
+                messageInitial.setPadding(0,0,0,10);
+                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT,1f));
                 messageInitial.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
 
-                tableRow.setLongClickable(true);
-                tableRow.setGravity(Gravity.CENTER);
-
-                tableRow.addView(senderInitial);
-                tableRow.addView(messageInitial);
 
                 final TableRow dateTimeRow = new TableRow(getApplicationContext());
-                tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                dateTimeRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
 
                 final TextView timeStamp = new TextView(getApplicationContext());
                 timeStamp.setText(allTimeStamps.get(i));
-                timeStamp.setPadding(20,0,0,0);
+                timeStamp.setPadding(20, 0, 0, 0);
                 timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
-                timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+
+                if(allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
+
+                    messageInitial.setBackgroundResource(R.drawable.chat_bubble_me);
+                    messageInitial.setPadding(20, 20, 20, 20);
+                    messageRow.setPadding(80, 10, 20, 10);
+                    timeStamp.setGravity(Gravity.END);
+                    timeStamp.setPadding(0, 0, 20, 0);
+                    senderInitial.setGravity(Gravity.END);
+                    senderInitial.setPadding(0, 0, 20, 0);
+
+                }
+                else {
+                    messageInitial.setBackgroundResource(R.drawable.chat_bubble_others);
+                    messageInitial.setPadding(20, 20, 20, 20);
+                    messageRow.setPadding(20,10,80,10);
+                    timeStamp.setPadding(20, 0, 0, 0);
+                    senderInitial.setPadding(20, 0, 0, 0);
+                }
+                messageRow.setLongClickable(true);
 
                 dateTimeRow.addView(timeStamp);
+                senderRow.addView(senderInitial);
+                messageRow.addView(messageInitial);
 
                 tableLayout.addView(dateTimeRow);
-                tableLayout.addView(tableRow);
+                tableLayout.addView(senderRow);
+                tableLayout.addView(messageRow);
 
-                tableRow.setOnLongClickListener(new View.OnLongClickListener() {
+                messageRow.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
                         for(int g =0; g < tableLayout.getChildCount();g++) {
                             if(v == tableLayout.getChildAt(g)) {
-                                highlightRow(tableRow);
-                                deletePos = (g-1)/2;
-                                tablePos = (deletePos*2)+1;
+                                highlightRow(messageRow);
+                                deletePos = (g-1)/3;
+                                tablePos = (deletePos*3)+2;
+                                System.out.println("DELETE POS " + deletePos);
+                                System.out.println("TABLE POS " + tablePos);
                                 return true;
                             }
                         }
@@ -431,17 +484,19 @@ public class ViewMessagesActivity extends AppCompatActivity {
         }
     }
 
+
+
     public void highlightRow(final TableRow row)
     {
         if(highlightedRows != null) {
             if(highlightedRows.size() < 1) {
 
-                row.setBackgroundColor(getResources().getColor(R.color.highlight));
+                row.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.highlight));
                 highlightedRows.add(row);
 
                 deleteIcon = new ImageView(this);
                 deleteIcon.setImageResource(R.drawable.ic_delete_black_24dp);
-                deleteIcon.setPadding(20, 0, 0, 0);
+                deleteIcon.setPadding(20, 20, 20, 20);
                 deleteIcon.setClickable(true);
                 row.addView(deleteIcon);
 
@@ -569,16 +624,18 @@ public class ViewMessagesActivity extends AppCompatActivity {
             View view = tableLayout.getChildAt(tablePos);
             if (view instanceof TableRow) {
                 TableRow row = (TableRow) view;
+                if(tablePos > 0) { tablePos--; }
                 if(((TextView)((TableRow) tableLayout.getChildAt(tablePos)).getChildAt(0)).getText().toString().equalsIgnoreCase(LogInActivity.loggedInUser)) {
-                    row.setBackgroundResource(R.drawable.bubble_green);
+                    row.getChildAt(0).setBackgroundResource(R.drawable.chat_bubble_me);
+                    row.getChildAt(0).setPadding(20, 20, 20, 20);
                 }
                 else
                 {
-                    row.setBackgroundResource(R.drawable.bubble_yellow);
+                    row.getChildAt(0).setBackgroundResource(R.drawable.chat_bubble_others);
+                    row.getChildAt(0).setPadding(20, 20, 20, 20);
                 }
                 deleteIcon.setClickable(false);
                 ((ViewManager) row.getParent()).removeView(deleteIcon);
-                row.setGravity(Gravity.CENTER);
                 row.removeView(deleteIcon);
             }
             highlightedRows.clear();
@@ -694,7 +751,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                 removeFromGroupIcon.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        openConfirmLeaveGroupPopUp(tableLayout);
+                                        openConfirmLeaveGroupPopUp(tableLayout, pwindo);
                                         personDeleteIndex = f;
                                     }
                                 });
@@ -761,11 +818,11 @@ public class ViewMessagesActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
 
             tableLayout.removeAllViews();
-            setViews();
+            setViewsRefresh();
         }
     };
 
-    public void openConfirmLeaveGroupPopUp(TableLayout d)
+    public void openConfirmLeaveGroupPopUp(TableLayout d, final PopupWindow pw)
     {
         LayoutInflater inflater = (LayoutInflater) ViewMessagesActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -814,10 +871,9 @@ public class ViewMessagesActivity extends AppCompatActivity {
                             c.RemoveUserFromGroup(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
-                                    Toast.makeText(getApplicationContext(), "Group left.", Toast.LENGTH_LONG).show();
-                                    Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                                    startActivity(f);
-                                    finish();
+                                    Toast.makeText(getApplicationContext(), "User removed", Toast.LENGTH_LONG).show();
+                                    pw.dismiss();
+                                    openPopUpWindow();
                                 }
 
                                 @Override

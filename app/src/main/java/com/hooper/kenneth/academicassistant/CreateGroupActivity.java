@@ -114,7 +114,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                                             convo.AddUserIntoConversation(new ServerCallback() {
                                                 @Override
                                                 public void onSuccess(JSONObject result) {
-                                                    Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
+                                                    //Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override

@@ -533,12 +533,12 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                             c.deleteConversation(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
-                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
                                 public void onSuccess(JSONArray result) {
-                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
@@ -551,7 +551,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onError(VolleyError error) {
-                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                                 }
                             }, deleteKey);
                         }
@@ -575,12 +575,12 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                             c.deleteConversation(new ServerCallback() {
                                                 @Override
                                                 public void onSuccess(JSONObject result) {
-                                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
                                                 public void onSuccess(JSONArray result) {
-                                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
@@ -593,7 +593,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
                                                 @Override
                                                 public void onError(VolleyError error) {
-                                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                                                 }
                                             }, deleteKey);
                                         }
@@ -620,7 +620,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError error) {
-                        Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                     }
                 }, deleteKey);
             }
@@ -771,7 +771,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String msg) {
-            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
         }
 
         private void sendRegistrationIdToBackend(String registrationId) {

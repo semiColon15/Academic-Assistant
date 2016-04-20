@@ -25,9 +25,8 @@ import com.hooper.kenneth.academicassistant.R;
 import java.util.List;
 
 public class GcmIntentService extends IntentService {
-    public static final String TAG = "GCM Demo";
+    public static final String TAG = "GCM";
     public static final int NOTIFICATION_ID = 1;
-    private NotificationManager notificationManager;
 
     public GcmIntentService() {
         super(GcmIntentService.class.getName());
@@ -48,16 +47,16 @@ public class GcmIntentService extends IntentService {
             String senderName = extras.getString("senderName");
             createNotification(message, senderName);
         }
-        GcmBroadcastReceiver.completeWakefulIntent(intent);//Signals "work completed", must be called to release wakelock
+        GcmBroadcastReceiver.completeWakefulIntent(intent);
     }
 
     private void createNotification(String message, String senderName) {
         Intent notificationIntent = new Intent(this, LogInActivity.class);
-            notificationIntent.setAction(Intent.ACTION_MAIN);
-            notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationCompat.Builder builder =
+        notificationIntent.setAction(Intent.ACTION_MAIN);
+        notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder =
                     new NotificationCompat.Builder(this)
                             .setAutoCancel(true)
                             .setContentTitle(message)
@@ -66,13 +65,10 @@ public class GcmIntentService extends IntentService {
                             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                             .setContentIntent(pendingIntent);
 
-            //Vibration
-            builder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+            builder.setVibrate(new long[]{500, 500, 500});
 
-            //LED
             builder.setLights(Color.RED, 3000, 3000);
 
-            //Ton
             Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             builder.setSound(uri);
 
@@ -84,11 +80,6 @@ public class GcmIntentService extends IntentService {
     static void updateMyActivity(Context context) {
 
         Intent intent = new Intent("unique_name");
-
-        //put whatever data you want to send, if any
-        //intent.putExtra("message", message);
-
-        //send broadcast
         context.sendBroadcast(intent);
     }
 }

@@ -151,7 +151,7 @@ public class SignUpActivity extends AppCompatActivity {
                                                     System.out.println("SAVED USER  ===== " + retrieveLoggedInUser());
 
                                                     VolleyLog.v("Response:%n %s", response);
-                                                    Toast.makeText(getApplicationContext(), "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
+                                                    //Toast.makeText(getApplicationContext(), "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
 
                                                     if(isAdminLevel) {
                                                         Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
@@ -216,7 +216,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                     } else {
                         // notify user you are not online
-                        Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_LONG).show();
                     }
                 }
                 else

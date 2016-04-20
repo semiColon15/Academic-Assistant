@@ -553,12 +553,12 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                             c.deleteConversation(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
-                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
                                 public void onSuccess(JSONArray result) {
-                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
@@ -571,7 +571,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onError(VolleyError error) {
-                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Error deleting convseration..", Toast.LENGTH_LONG).show();
                                 }
                             }, deleteKey);
                         }
@@ -597,12 +597,12 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                             c.deleteConversation(new ServerCallback() {
                                                 @Override
                                                 public void onSuccess(JSONObject result) {
-                                                    Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
+                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
                                                 public void onSuccess(JSONArray result) {
-                                                    Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
+                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
@@ -615,7 +615,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
                                                 @Override
                                                 public void onError(VolleyError error) {
-                                                    Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(getApplicationContext(), "Error deleting conversation..", Toast.LENGTH_LONG).show();
                                                 }
                                             }, deleteKey);
                                         }
@@ -642,7 +642,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError error) {
-                        Toast.makeText(getApplicationContext(), "DIDN'T WORK", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                     }
                 }, deleteKey);
             }
@@ -747,7 +747,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             fos = ctx.openFileOutput("StartUpNumber.txt", Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(num);
-            System.out.println("SAVED START UP NUMBER");
             oos.close();
         }catch(IOException e){
             e.printStackTrace();

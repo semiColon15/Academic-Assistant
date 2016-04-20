@@ -101,6 +101,49 @@ public class MessageServiceConnectivity {
         mRequestQueue.add(req);
     }
 
+    public void setInitialViewsNoDialog(final ServerCallback callback)
+    {
+        //IF TIME FIX THIS TO RETURN MESSAGES ONLY IN A SPECIFIED GROUP IN SERVICE
+        String url = "Messages/GetMessages";
+        //showpDialog();
+        String Url = baseUrl + url;
+
+
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, Url, null,
+                new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                        callback.onSuccess(response);
+                        Log.d(TAG, response.toString());
+                        //hidepDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+               // Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
+                //hidepDialog();
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                String token = LogInActivity.token;
+                headers.put("Authorization", "bearer "+ token);
+                return headers;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                10000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        mRequestQueue.add(req);
+    }
+
     public void setViews(final ServerCallback callback)
     {
         String url = "Messages/GetMessages";
@@ -119,8 +162,7 @@ public class MessageServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context,
-                        error.getMessage(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }){
             @Override
@@ -168,17 +210,17 @@ public class MessageServiceConnectivity {
                         try {
                             callback.onSuccess(response);
                             VolleyLog.v("Response:%n %s", response.toString(4));
-                            Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Connection error..", Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -250,17 +292,17 @@ public class MessageServiceConnectivity {
                         try {
                             callback.onSuccess(response);
                             VolleyLog.v("Response:%n %s", response.toString(4));
-                            Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                Toast.makeText(context, "Volley error", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Connection error", Toast.LENGTH_LONG).show();
             }
         }){
             @Override
