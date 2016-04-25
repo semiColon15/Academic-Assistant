@@ -71,6 +71,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     private ImageView leaveGroupIcon;
     private String admin;
     private String deleteKey;
+    ProgressDialog pDialog;
 
     //NOTIFICATIONS
     private static final String TAG = "LecturerConvo";
@@ -81,8 +82,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_conversation_lecturer);
+        /*if(LogInActivity.loggedInUserType) {
+            setContentView(R.layout.activity_choose_conversation_lecturer);
+        } else {
+            setContentView(R.layout.activity_choose_conversation_student);
+        }*/
 
-        ProgressDialog pDialog =  new ProgressDialog(this);
+        pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         u = new UserServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
@@ -96,6 +102,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
 
         tableLayout = (TableLayout) findViewById(R.id.convos);
+        //TODO TEST
+        /*if(LogInActivity.loggedInUserType)
+            tableLayout = (TableLayout) findViewById(R.id.convos);
+        else
+            tableLayout = (TableLayout) findViewById(R.id.convos_stu);*/
+        //
+
         tableLayout.setVerticalScrollBarEnabled(true);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -130,7 +143,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //TODO TEST
+        if(LogInActivity.loggedInUserType) {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+        } else
+        {
+            getMenuInflater().inflate(R.menu.main_menu_stu, menu);
+        }
         return true;
     }
 
@@ -449,12 +468,14 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                         }
                         catch(JSONException e) {
                             e.printStackTrace();
+                            hidepDialog();
                         }
                         if(user != null) {
                             c.RemoveUserFromGroup(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
                                     Toast.makeText(getApplicationContext(), "Group left.", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                     Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                                     startActivity(f);
                                     finish();
@@ -471,6 +492,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                 @Override
                                 public void onError(VolleyError error) {
                                     Toast.makeText(getApplicationContext(), "Error, unable to leave group...", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                 }
                             }, deleteKey, user);
                         }
@@ -488,7 +510,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError error) {
-
+                        hidepDialog();
                     }
                 }, LogInActivity.loggedInUser);
 
@@ -553,17 +575,16 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                             c.deleteConversation(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
-                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
                                 public void onSuccess(JSONArray result) {
-                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
                                 public void onSuccess(String result) {
                                     Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                     Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                                     startActivity(f);
                                     finish();
@@ -572,6 +593,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                 @Override
                                 public void onError(VolleyError error) {
                                     Toast.makeText(getApplicationContext(), "Error deleting convseration..", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                 }
                             }, deleteKey);
                         }
@@ -591,23 +613,20 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(String result) {
 
-                                        //Toast.makeText(getApplicationContext(), "Deleted Message" + f, Toast.LENGTH_LONG).show();
-
                                         if (messageIDs.get(f) == messageIDs.get(messageIDs.size() - 1)) {
                                             c.deleteConversation(new ServerCallback() {
                                                 @Override
                                                 public void onSuccess(JSONObject result) {
-                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
                                                 public void onSuccess(JSONArray result) {
-                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
                                                 public void onSuccess(String result) {
                                                     Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
+                                                    hidepDialog();
                                                     Intent f = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                                                     startActivity(f);
                                                     finish();
@@ -616,6 +635,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onError(VolleyError error) {
                                                     Toast.makeText(getApplicationContext(), "Error deleting conversation..", Toast.LENGTH_LONG).show();
+                                                    hidepDialog();
                                                 }
                                             }, deleteKey);
                                         }
@@ -624,6 +644,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                                     @Override
                                     public void onError(VolleyError error) {
                                         Toast.makeText(getApplicationContext(), "Failed to delete group", Toast.LENGTH_LONG).show();
+                                        hidepDialog();
                                     }
                                 }, messageIDs.get(f));
 
@@ -643,6 +664,7 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
                     @Override
                     public void onError(VolleyError error) {
                         Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                        hidepDialog();
                     }
                 }, deleteKey);
             }
@@ -769,29 +791,6 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
         return key;
     }
 
-    /*public String retrieveKey() {
-        String key = "";
-        try {
-            File myDir = new File(getFilesDir().getAbsolutePath());
-            BufferedReader br = new BufferedReader(new FileReader(myDir + "/UniqueKey.txt"));
-            String s = br.readLine();
-            System.out.println("IN GETTING METHOD::::::::: " + s);
-            char[] p = s.toCharArray();
-            for (int i = 7; i < s.length(); i++) {
-                key += p[i];
-                System.out.println("TRANSFERRING::::::: " + key);
-            }
-
-            System.out.println("SOSN USER: " + key);
-            System.out.println("ORIGINAL:::::: " + s);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return key;
-    }*/
-
-
     private class RegisterInBackgroundTask extends AsyncTask<String,String,String> {
         private Context context;
         private String SENDER_ID = "113571816922";
@@ -807,19 +806,16 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             try {
                 if (gcm == null) {gcm = GoogleCloudMessaging.getInstance(context);}
                 registrationId = gcm.register(SENDER_ID);
-                //message = "Device successfully registered with GCM, notification token=" + registrationId;
                 Log.d(TAG, message);
                 sendRegistrationIdToBackend(registrationId);
 
             } catch (IOException ex) {
-                //message = "GCM registration error :" + ex.getMessage();
             }
             return message;
         }
 
         @Override
         protected void onPostExecute(String msg) {
-            //Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
         }
 
         private void sendRegistrationIdToBackend(String registrationId) {
@@ -834,12 +830,10 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
             client.registerDevice(device, new Callback<Device>() {
                 @Override
                 public void success(Device device, Response response) {
-                    //Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void failure(RetrofitError retrofitError) {
-                    //Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -861,15 +855,13 @@ public class ChooseConversationLecturerActivity extends AppCompatActivity {
     public void unregister() {
         try {
             gcm.unregister();
-        }catch(IOException d) {
+        } catch(IOException d) {
+            d.printStackTrace();
         }
     }
+
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
+    }
 }
-
-
-
-
-
-
-
-

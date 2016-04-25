@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -130,7 +132,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.miInfo_stu:
@@ -158,7 +160,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
+    }*/
 
     public static void buttonEffect(View button){
         button.setOnTouchListener(new View.OnTouchListener() {
@@ -361,7 +363,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
                             System.out.println("COUNT " + tableLayout.getChildCount());
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
-                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
                             }
@@ -408,7 +409,13 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -499,7 +506,13 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -675,7 +688,13 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());

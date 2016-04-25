@@ -44,16 +44,9 @@ public class JoinGroupActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(JSONObject result) {
 
-                        //Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
-                        if (LogInActivity.loggedInUserType) {
-                            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                            startActivity(t);
-                            finish();
-                        } else {
-                            Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-                            startActivity(t);
-                            finish();
-                        }
+                        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                        startActivity(t);
+                        finish();
                     }
 
                     @Override
@@ -87,39 +80,12 @@ public class JoinGroupActivity extends AppCompatActivity {
         mTitle.setShadowLayer(10, 5, 5, Color.BLACK);
     }
 
-/*    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_create_group, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.miInfo_add:
-                //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
-                //startActivity(i);
-                //finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }*/
-
     @Override
     public void onBackPressed()
     {
-        if(LogInActivity.loggedInUserType) {
-            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-            startActivity(t);
-            finish();
-        } else {
-            Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-            startActivity(t);
-            finish();
-        }
+        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+        startActivity(t);
+        finish();
     }
 
     public static void buttonEffect(View button){

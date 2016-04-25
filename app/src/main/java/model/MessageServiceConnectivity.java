@@ -292,10 +292,8 @@ public class MessageServiceConnectivity {
                         try {
                             callback.onSuccess(response);
                             VolleyLog.v("Response:%n %s", response.toString(4));
-                            //Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            //Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {

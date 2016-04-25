@@ -14,6 +14,7 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.hooper.kenneth.academicassistant.LogInActivity;
 import com.hooper.kenneth.academicassistant.SignUpActivity;
 
 import org.json.JSONArray;
@@ -28,7 +29,7 @@ public class UserServiceConnectivity {
     private RequestQueue mRequestQueue;
     private ProgressDialog pDialog;
 
-    String baseUrl = "http://academicassistantservice2.azurewebsites.net/api/";
+    String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/";
     private static String TAG = SignUpActivity.class.getSimpleName();
 
     public UserServiceConnectivity(Context context, ProgressDialog dialog)
@@ -54,12 +55,10 @@ public class UserServiceConnectivity {
                     public void onResponse(JSONObject response) {
 
                         callback.onSuccess(response);
-                        hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                VolleyLog.e("Error is here 1: ", error.getMessage());
                 Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
@@ -94,12 +93,18 @@ public class UserServiceConnectivity {
                     }
                 }, new Response.ErrorListener() {
                 @Override
-                public void onErrorResponse(VolleyError error) {VolleyLog.e("Error is here 2: ", error.getMessage());
-                    System.out.println(error.toString());
+                public void onErrorResponse(VolleyError error) {
                     Toast.makeText(context, "ERROR", Toast.LENGTH_LONG).show();
                     hidepDialog();
                 }
-            });
+            }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
 
         req.setRetryPolicy(new DefaultRetryPolicy(
                 10000,
@@ -112,7 +117,7 @@ public class UserServiceConnectivity {
     public void getToken(final ServerCallback callback, final User user)
     {
         showpDialog();
-        final String Url2 = "http://academicassistantservice2.azurewebsites.net/token";
+        final String Url2 = "https://academicassistantservice2.azurewebsites.net/token";
 
         CustomBodyStringRequest req2 = new CustomBodyStringRequest(Url2,
                 new Response.Listener<String>() {
@@ -120,7 +125,6 @@ public class UserServiceConnectivity {
                     public void onResponse(String response) {
 
                         callback.onSuccess(response);
-                        hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -167,8 +171,6 @@ public class UserServiceConnectivity {
                     public void onResponse(JSONArray response) {
 
                         callback.onSuccess(response);
-                        hidepDialog();
-
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -176,7 +178,14 @@ public class UserServiceConnectivity {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
                 hidepDialog();
             }
-        });
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
 
         req.setRetryPolicy(new DefaultRetryPolicy(
                 10000,
@@ -200,8 +209,6 @@ public class UserServiceConnectivity {
                     public void onResponse(JSONObject response) {
 
                         callback.onSuccess(response);
-                        hidepDialog();
-
                     }
                 }, new Response.ErrorListener() {
 
@@ -212,7 +219,14 @@ public class UserServiceConnectivity {
                         hidepDialog();
 
                     }
-                });
+                }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  headers = new HashMap<>();
+                headers.put("Authorization", "bearer "+ LogInActivity.token);
+                return headers;
+            }
+        };
 
         req.setRetryPolicy(new DefaultRetryPolicy(
                 10000,

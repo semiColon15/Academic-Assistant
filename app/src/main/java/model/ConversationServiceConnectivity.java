@@ -32,7 +32,7 @@ public class ConversationServiceConnectivity {
     private RequestQueue mRequestQueue;
     private ProgressDialog pDialog;
 
-    private String baseUrl = "http://academicassistantservice2.azurewebsites.net/api/";
+    private String baseUrl = "https://academicassistantservice2.azurewebsites.net/api/";
     private static String TAG = SignUpActivity.class.getSimpleName();
 
     public ConversationServiceConnectivity(Context context, ProgressDialog pDialog)
@@ -56,7 +56,7 @@ public class ConversationServiceConnectivity {
                         Log.d(TAG, response.toString());
 
                         callback.onSuccess(response);
-                        hidepDialog();
+                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -97,7 +97,7 @@ public class ConversationServiceConnectivity {
                         Log.d(TAG, response.toString());
 
                         callback.onSuccess(response);
-                        hidepDialog();
+                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -170,6 +170,7 @@ public class ConversationServiceConnectivity {
         params.put("Key", key);
         params.put("ConversationName", name);
         params.put("Administrator", admin);
+        pDialog.setMessage("Creating Converstion..");
         showpDialog();
 
         JsonObjectRequest req = new JsonObjectRequest(baseUrl, new JSONObject(params),
@@ -178,7 +179,7 @@ public class ConversationServiceConnectivity {
                     public void onResponse(JSONObject response) {
                         try {
                                 callback.onSuccess(response);
-                            hidepDialog();
+                            //hidepDialog();
                             VolleyLog.v("Response:%n %s", response.toString(4));
 
                         } catch (JSONException e) {
@@ -226,7 +227,7 @@ public class ConversationServiceConnectivity {
                     public void onResponse(JSONObject response) {
                         try {
                             callback.onSuccess(response);
-                            hidepDialog();
+                            //hidepDialog();
 
                             VolleyLog.v("Response:%n %s", response.toString(4));
                             //.makeText(context, "Success", Toast.LENGTH_LONG).show();
@@ -265,6 +266,7 @@ public class ConversationServiceConnectivity {
     {
         String url = "Conversations/DeleteConversation?key="+key;
         String Url = baseUrl + url;
+        pDialog.setMessage("Deleting Conversation...");
         showpDialog();
 
         StringRequest req = new StringRequest(Request.Method.DELETE, Url,
@@ -275,7 +277,7 @@ public class ConversationServiceConnectivity {
                         Log.d(TAG, response);
 
                         callback.onSuccess(response);
-                        hidepDialog();
+                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -314,7 +316,7 @@ public class ConversationServiceConnectivity {
                         Log.d(TAG, response);
 
                         callback.onSuccess(response);
-                        hidepDialog();
+                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -358,7 +360,7 @@ public class ConversationServiceConnectivity {
                         Log.d(TAG, response.toString());
 
                         callback.onSuccess(response);
-                        hidepDialog();
+                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override

@@ -40,6 +40,7 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText password;
     private EditText confirmPassword;
     private boolean isAdminLevel;
+    private ProgressDialog pDialog;
 
     private UserServiceConnectivity userServiceConnectivity;
 
@@ -48,6 +49,8 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_sign_up);
+
+        pDialog = new ProgressDialog(this);
 
         emailAddress = (EditText) findViewById(R.id.emailInput);
         password = (EditText) findViewById(R.id.passwordInput);
@@ -151,22 +154,15 @@ public class SignUpActivity extends AppCompatActivity {
                                                     System.out.println("SAVED USER  ===== " + retrieveLoggedInUser());
 
                                                     VolleyLog.v("Response:%n %s", response);
-                                                    //Toast.makeText(getApplicationContext(), "Account Registered. Token Recieved", Toast.LENGTH_LONG).show();
-
-                                                    if(isAdminLevel) {
-                                                        Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                                                        startActivity(i);
-                                                        finish();
-                                                    } else
-                                                    {
-                                                        Intent i = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-                                                        startActivity(i);
-                                                        finish();
-                                                    }
+                                                    hidepDialog();
+                                                    Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                    startActivity(i);
+                                                    finish();
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                     Toast.makeText(getApplicationContext(), "Account Registration Error", Toast.LENGTH_LONG).show();
+                                                    hidepDialog();
                                                 }
                                             }
 
@@ -174,6 +170,7 @@ public class SignUpActivity extends AppCompatActivity {
                                             public void onError(VolleyError error)
                                             {
                                                 Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                                hidepDialog();
                                             }
                                         }, user);
                                     }
@@ -192,6 +189,7 @@ public class SignUpActivity extends AppCompatActivity {
                                     public void onError(VolleyError error)
                                     {
                                         Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                        hidepDialog();
                                     }
                                 }, user);
                             }
@@ -210,26 +208,26 @@ public class SignUpActivity extends AppCompatActivity {
                             public void onError(VolleyError error)
                             {
                                 Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                hidepDialog();
                             }
                         }, user);
 
 
                     } else {
                         // notify user you are not online
-                        //Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_LONG).show();
+                        hidepDialog();
                     }
                 }
-                else
+                else {
                     Toast.makeText(getApplicationContext(), "FAILED", Toast.LENGTH_LONG).show();
+                    hidepDialog();
+                }
             }
         });
     }
 
     public void onRadioButtonClicked(View view) {
-        // Is the button now checked?
         boolean checked = ((RadioButton) view).isChecked();
-
-        // Check which radio button was clicked
         switch(view.getId()) {
             case R.id.radio_stu:
                 if (checked)
@@ -367,5 +365,10 @@ public class SignUpActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return Boolean.valueOf(type);
+    }
+
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 }

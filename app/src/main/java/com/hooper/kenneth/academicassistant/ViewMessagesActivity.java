@@ -71,6 +71,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
     private int deletePos;
     private int tablePos;
     private int personDeleteIndex;
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,22 +84,15 @@ public class ViewMessagesActivity extends AppCompatActivity {
         sendButton.setImageResource(R.drawable.ic_send_black_24dp);
         sendButton.setClickable(true);
 
-        ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog = new ProgressDialog(this);
         pDialog.setMessage("Please wait...");
         pDialog.setCancelable(false);
 
         tableLayout = (TableLayout) findViewById(R.id.table);
         tableLayout.setVerticalScrollBarEnabled(true);
 
-        if (LogInActivity.loggedInUserType) {
-            keyConvo = ChooseConversationLecturerActivity.chosenConvoKey;
-            nameConvo = ChooseConversationLecturerActivity.chosenGroupName;
-        } else {
-            keyConvo = ChooseConversationStudentActivity.chosenConvoKey;
-            nameConvo = ChooseConversationStudentActivity.chosenGroupName;
-        }
-
-        System.out.println("CHOSEN KEY IS " + keyConvo + " " + nameConvo);
+        keyConvo = ChooseConversationLecturerActivity.chosenConvoKey;
+        nameConvo = ChooseConversationLecturerActivity.chosenGroupName;
 
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
 
@@ -135,7 +129,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                                               String time = date.format(currentLocalTime);
                                               allTimeStamps.add(time);
-                                              System.out.println("TIME = " + time);
 
                                               if (!messageText.getText().toString().equalsIgnoreCase("") && messageText.getText().toString().trim().length() > 0) {
 
@@ -147,17 +140,14 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                                                       @Override
                                                       public void onSuccess(JSONArray result) {
-
                                                       }
 
                                                       @Override
                                                       public void onSuccess(String result) {
-
                                                       }
 
                                                       @Override
                                                       public void onError(VolleyError error) {
-
                                                       }
                                                   }, messageText.getText().toString(), keyConvo, LogInActivity.loggedInUser, time, keyConvo);
 
@@ -229,44 +219,28 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                                                   messageText.setText("");
 
-                                                  if (LogInActivity.loggedInUserType) {
-                                                      ChooseConversationLecturerActivity.saveKey("", getApplicationContext());
-                                                  } else {
-                                                      ChooseConversationStudentActivity.saveKey("", getApplicationContext());
-                                                  }
+                                                  ChooseConversationLecturerActivity.saveKey("", getApplicationContext());
 
                                                   scrollView.fullScroll(View.FOCUS_DOWN);
 
-                                                  String key_;
-                                                  if(LogInActivity.loggedInUserType)
-                                                  {
-                                                      key_ = ChooseConversationLecturerActivity.chosenConvoKey;
-                                                  }
-                                                  else
-                                                  {
-                                                      key_ = ChooseConversationStudentActivity.chosenConvoKey;
-                                                  }
+                                                  String key_ = ChooseConversationLecturerActivity.chosenConvoKey;
 
                                                   //Send Notification
                                                   connectivity.sendMessageNotification(new ServerCallback() {
                                                       @Override
                                                       public void onSuccess(JSONObject result) {
-
                                                       }
 
                                                       @Override
                                                       public void onSuccess(JSONArray result) {
-
                                                       }
 
                                                       @Override
                                                       public void onSuccess(String result) {
-
                                                       }
 
                                                       @Override
                                                       public void onError(VolleyError error) {
-
                                                       }
                                                   }, key_, "New Message in " + nameConvo,LogInActivity.loggedInUser);
                                               }
@@ -294,12 +268,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                         JSONObject message = (JSONObject) response.get(i);
                         String key = message.getString("ConversationKey");
-                        String type;
-                        if (LogInActivity.loggedInUserType) {
-                            type = ChooseConversationLecturerActivity.chosenConvoKey;
-                        } else {
-                            type = ChooseConversationStudentActivity.chosenConvoKey;
-                        }
+                        String type = ChooseConversationLecturerActivity.chosenConvoKey;;
+
                         if (key.equalsIgnoreCase(type)) {
                             String sender = message.getString("Sender");
                             String message_ = message.getString("MessageContent");
@@ -357,12 +327,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                         JSONObject message = (JSONObject) response.get(i);
                         String key = message.getString("ConversationKey");
-                        String type;
-                        if (LogInActivity.loggedInUserType) {
-                            type = ChooseConversationLecturerActivity.chosenConvoKey;
-                        } else {
-                            type = ChooseConversationStudentActivity.chosenConvoKey;
-                        }
+                        String type = ChooseConversationLecturerActivity.chosenConvoKey;
+
                         if (key.equalsIgnoreCase(type)) {
                             String sender = message.getString("Sender");
                             String message_ = message.getString("MessageContent");
@@ -472,8 +438,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                 highlightRow(messageRow);
                                 deletePos = (g-1)/3;
                                 tablePos = (deletePos*3)+2;
-                                System.out.println("DELETE POS " + deletePos);
-                                System.out.println("TABLE POS " + tablePos);
                                 return true;
                             }
                         }
@@ -523,7 +487,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                     openPopUpDeleteWindow();
                                 }
                                 else {
-                                    if(LogInActivity.loggedInUser.equalsIgnoreCase(((TextView)((TableRow) tableLayout.getChildAt(tablePos)).getChildAt(0)).getText().toString()))
+                                    if(LogInActivity.loggedInUser.equalsIgnoreCase(((TextView)((TableRow) tableLayout.getChildAt(tablePos-1)).getChildAt(0)).getText().toString()))
                                     {
                                         openPopUpDeleteWindow();
                                     }
@@ -532,6 +496,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                         Toast.makeText(getApplicationContext(), "You do not have permission to delete this message.", Toast.LENGTH_LONG).show();
                                     }
                                 }
+                                hidepDialog();
                             }
 
                             @Override
@@ -544,6 +509,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                             @Override
                             public void onError(VolleyError error) {
+                                hidepDialog();
                             }
                         }, keyConvo);
                     }
@@ -560,7 +526,13 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
-        final PopupWindow pwindo = new PopupWindow(layout, 470, 450, true);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -640,7 +612,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
             }
             highlightedRows.clear();
         }
-        else if(numPressed == 1)// && !wasHighlighted)
+        else if(numPressed == 1)
         {
             finish();
         }
@@ -650,9 +622,33 @@ public class ViewMessagesActivity extends AppCompatActivity {
         }
     }
 
+    //TODO
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_messages, menu);
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        c.getConversation(new ServerCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+                try {
+                    groupAdmin = result.getString("Administrator");
+                    if(LogInActivity.loggedInUser.equalsIgnoreCase(groupAdmin)) {
+                        getMenuInflater().inflate(R.menu.menu_messages_admin, menu);
+                    }
+                    else {
+                        getMenuInflater().inflate(R.menu.menu_messages, menu);
+                    }
+                } catch (JSONException e) { e.printStackTrace(); }
+            }
+            @Override
+            public void onSuccess(JSONArray result) {
+            }
+            @Override
+            public void onSuccess(String result) {
+            }
+            @Override
+            public void onError(VolleyError error) {
+                hidepDialog();
+            }
+        }, keyConvo);
         return true;
     }
 
@@ -661,6 +657,9 @@ public class ViewMessagesActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.miInfo_msg:
                 openPopUpWindow();
+                return true;
+            case R.id.miNotification:
+                //TODO
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -772,8 +771,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    hidepDialog();
                     Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
+                hidepDialog();
             }
 
             @Override
@@ -786,6 +787,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
             @Override
             public void onError(VolleyError error) {
+                hidepDialog();
             }
         }, keyConvo);
 
@@ -873,6 +875,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                                 public void onSuccess(JSONObject result) {
                                     Toast.makeText(getApplicationContext(), "User removed", Toast.LENGTH_LONG).show();
                                     pw.dismiss();
+                                    hidepDialog();
                                     openPopUpWindow();
                                 }
 
@@ -886,6 +889,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onError(VolleyError error) {
+                                    hidepDialog();
                                     Toast.makeText(getApplicationContext(), "Error, unable to leave group...", Toast.LENGTH_LONG).show();
                                 }
                             }, keyConvo, user);
@@ -904,7 +908,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError error) {
-
+                        hidepDialog();
                     }
                 }, userNameToRemove);
 
@@ -919,5 +923,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
             }
         });
         buttonEffect(cancelLeave);
+    }
+
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 }

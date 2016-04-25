@@ -32,11 +32,12 @@ public class CreateGroupActivity extends AppCompatActivity {
 
     private Button createGroup;
     private ConversationServiceConnectivity convo;
+    private ProgressDialog pDialog;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_group_lecturer);
-        ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog = new ProgressDialog(this);
 
         convo = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
 
@@ -91,6 +92,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                                 }
                                 if (keyExists) {
                                     Toast.makeText(getApplicationContext(), "Key already exists. Please choose a different key", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                 }
                                 if (!keyExists) {
                                     final String key = enrolmentKey.getText().toString().trim();
@@ -109,12 +111,10 @@ public class CreateGroupActivity extends AppCompatActivity {
                                             textView.setText(R.string.conversation_key);
                                             textView.setPadding(0, 20, 0, 0);
 
-                                            //groupKey = key;
-
                                             convo.AddUserIntoConversation(new ServerCallback() {
                                                 @Override
                                                 public void onSuccess(JSONObject result) {
-                                                    //Toast.makeText(getApplicationContext(), "WORKED", Toast.LENGTH_LONG).show();
+                                                    hidepDialog();
                                                 }
 
                                                 @Override
@@ -128,6 +128,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onError(VolleyError error) {
                                                     Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                                    hidepDialog();
                                                 }
                                             }, key, LogInActivity.loggedInUser, LogInActivity.password, String.valueOf(LogInActivity.loggedInUserType));
                                         }
@@ -145,6 +146,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                                         @Override
                                         public void onError(VolleyError error) {
                                             Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                            hidepDialog();
                                         }
                                     }, key, gName, LogInActivity.loggedInUser);
                                 }
@@ -156,12 +158,12 @@ public class CreateGroupActivity extends AppCompatActivity {
 
                             @Override
                             public void onError(VolleyError error) {
+                                hidepDialog();
                             }
                         });
                     }
 
                 } else if (createGroup.getText().toString().equalsIgnoreCase("OK")) {
-                    //DISPLAY NEXT SCREEN
                     Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
                     startActivity(t);
                     finish();
@@ -176,37 +178,10 @@ public class CreateGroupActivity extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        if(LogInActivity.loggedInUserType) {
-            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-            startActivity(t);
-            finish();
-        } else {
-            Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-            startActivity(t);
-            finish();
-        }
+        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+        startActivity(t);
+        finish();
     }
-
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_create_group, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.miInfo_add:
-                //Intent i = new Intent(getApplicationContext(), JoinGroupActivity.class);
-                //startActivity(i);
-                //finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }*/
 
     public static void buttonEffect(View button){
         button.setOnTouchListener(new View.OnTouchListener() {
@@ -227,5 +202,10 @@ public class CreateGroupActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 }

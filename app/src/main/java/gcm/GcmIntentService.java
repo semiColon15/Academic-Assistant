@@ -39,8 +39,10 @@ public class GcmIntentService extends IntentService {
         Bundle extras = intent.getExtras();
         Log.i(TAG, "Received extras: " + extras.toString());
         if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
+            //TEST
             createNotification("Send error occured!", "GCM");
         } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
+            //TEST
             createNotification("Messages deleted on the server!", "GCM");
         } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
             String message = extras.getString("message");

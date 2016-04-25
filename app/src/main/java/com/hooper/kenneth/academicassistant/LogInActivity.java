@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -101,23 +102,14 @@ public class LogInActivity extends AppCompatActivity {
 
         if (loggedIn)
         {
-            if(loggedInUserType) {
-                Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                startActivity(t);
-                finish();
-            }
-            else
-            {
-                Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-                startActivity(t);
-                finish();
-            }
+            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+            startActivity(t);
+            finish();
         }
 
 
         logInButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                showpDialog();
 
                 userServiceConnectivity.retrieveAllUsers(new ServerCallback() {
                     @Override
@@ -141,6 +133,7 @@ public class LogInActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            hidepDialog();
                         }
 
                         boolean g = false;
@@ -158,12 +151,10 @@ public class LogInActivity extends AppCompatActivity {
                                 userServiceConnectivity.getToken(new ServerCallback() {
                                     @Override
                                     public void onSuccess(JSONObject result) {
-
                                     }
 
                                     @Override
                                     public void onSuccess(JSONArray result) {
-
                                     }
 
                                     @Override
@@ -175,11 +166,11 @@ public class LogInActivity extends AppCompatActivity {
                                             LogInActivity.saveToken("token.txt", token, getApplicationContext());
 
                                             VolleyLog.v("Response:%n %s", response);
-                                            //Toast.makeText(getApplicationContext(), "Token Recieved", Toast.LENGTH_LONG).show();
 
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                             Toast.makeText(getApplicationContext(), "Account Registration Error", Toast.LENGTH_LONG).show();
+                                            hidepDialog();
                                         }
 
                                         password = passwordInput.getText().toString();
@@ -197,19 +188,14 @@ public class LogInActivity extends AppCompatActivity {
                                                     saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
                                                     loggedInUserType = Boolean.valueOf(adminLevel_);
 
-                                                    if (Boolean.valueOf(adminLevel_)) {
-                                                        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
-                                                        startActivity(t);
-                                                        finish();
-                                                    } else {
-                                                        Intent t = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
-                                                        startActivity(t);
-                                                        finish();
-                                                    }
+                                                    Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                    startActivity(t);
+                                                    finish();
 
                                                 } catch (JSONException e) {
                                                     e.printStackTrace();
                                                 }
+                                                hidepDialog();
                                             }
 
                                             @Override
@@ -225,6 +211,7 @@ public class LogInActivity extends AppCompatActivity {
                                             @Override
                                             public void onError(VolleyError error) {
                                                 Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                                hidepDialog();
                                             }
                                         }, usernameInput.getText().toString());
                                     }
@@ -237,6 +224,7 @@ public class LogInActivity extends AppCompatActivity {
 
                             } else {
                                 Toast.makeText(getApplicationContext(), "ERROR", Toast.LENGTH_LONG).show();
+                                hidepDialog();
                             }
                         }
                     }
@@ -249,6 +237,7 @@ public class LogInActivity extends AppCompatActivity {
                     @Override
                     public void onError(VolleyError error) {
                         Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                        hidepDialog();
                     }
                 });
                 //hidepDialog();
@@ -304,6 +293,10 @@ public class LogInActivity extends AppCompatActivity {
             File myDir = new File(getFilesDir().getAbsolutePath());
             BufferedReader br = new BufferedReader(new FileReader(myDir + "/token.txt"));
             String s = br.readLine();
+
+            //DECRPYT
+            //String decrypted = decrpytToken(s);
+
             char[] p = s.toCharArray();
             for(int i = 7; i < s.length(); i++)
             {
@@ -316,6 +309,12 @@ public class LogInActivity extends AppCompatActivity {
     }
 
     public static void saveToken(String filename, String token, Context ctx) {
+
+        /*String encryptedToken = encryptToken(token);
+        System.out.println("ENCRYPTED: " + encryptedToken);
+        String decryptedToken = decrpytToken(encryptedToken);
+        System.out.println("DECRYTPED: " + decryptedToken);*/
+
         FileOutputStream fos;
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
@@ -426,13 +425,24 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
+    /*private static String encryptToken(String token)
+    {
+
+    }
+
+    private static String decrpytToken(String token)
+    {
+
+    }*/
+
+
     private void showpDialog() {
         if (!pDialog.isShowing())
             pDialog.show();
     }
 
-    /*private void hidepDialog() {
+    private void hidepDialog() {
         if (pDialog.isShowing())
             pDialog.dismiss();
-    }*/
+    }
 }

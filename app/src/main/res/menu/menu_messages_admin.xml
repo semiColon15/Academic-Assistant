@@ -1,13 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/miJoinGroup"
-        android:icon="@drawable/adduser"
-        app:showAsAction="ifRoom"
-        android:title="Join Group" />
-
     <item
-        android:id="@+id/miOptions"
+        android:id="@+id/miOptions_msg"
         android:icon="@drawable/ic_more_vert_black_24dp"
         app:showAsAction="ifRoom"
         android:title="Options">
@@ -15,20 +11,21 @@
         <menu>
 
             <item
-                android:id="@+id/miInfo"
+                android:id="@+id/miInfo_msg"
                 android:icon="@drawable/ic_info_black_24dp"
                 app:showAsAction="ifRoom"
                 android:title="Info">
             </item>
 
             <item
-                android:id="@+id/miLogout"
-                android:icon="@drawable/logout"
+                android:id="@+id/miNotification"
+                android:icon="@drawable/ic_notifications_black_24dp"
                 app:showAsAction="ifRoom"
-                android:title="Log Out">
+                android:title="Special Notice">
             </item>
 
         </menu>
 
     </item>
+
 </menu>
