@@ -31,17 +31,13 @@ import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.hooper.kenneth.academicassistant.notifications.Device;
-import com.hooper.kenneth.academicassistant.notifications.PushNotificationClient;
+import com.hooper.kenneth.academicassistant.notifications.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -56,7 +52,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class ChooseConversationStudentActivity extends AppCompatActivity {
+public class ChooseConversationActivity extends AppCompatActivity {
 
     private TableLayout tableLayout;
     private ConversationServiceConnectivity c;
@@ -66,23 +62,25 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
     private ArrayList<Conversation> conversations;
     private ArrayList<TableRow> highlightedRows;
     private ArrayList<Integer> messageIDs;
-
+    private int numPressed = 0;
+    private boolean wasHighlighted = false;
+    private ImageView deleteIcon;
+    private ImageView leaveGroupIcon;
+    private String admin;
+    private String deleteKey;
+    ProgressDialog pDialog;
 
     //NOTIFICATIONS
-    private String SENDER_ID = "113571816922";
     private static final String TAG = "LecturerConvo";
     private GoogleCloudMessaging gcm;
     private Context context;
-    private String registrationId;
     //
-
-    private int startUpNumber;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_choose_conversation_student);
+        setContentView(R.layout.activity_choose_conversation_lecturer);
 
-        ProgressDialog pDialog =  new ProgressDialog(this);
+        pDialog =  new ProgressDialog(this);
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
         u = new UserServiceConnectivity(getApplicationContext(), pDialog);
         saveKey("", getApplicationContext());
@@ -94,7 +92,8 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         gcm = GoogleCloudMessaging.getInstance(this);
         //
 
-        tableLayout = (TableLayout) findViewById(R.id.convos_stu);
+
+        tableLayout = (TableLayout) findViewById(R.id.convos);
         tableLayout.setVerticalScrollBarEnabled(true);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -102,7 +101,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -112,6 +111,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         highlightedRows = new ArrayList<>();
 
         fillConvos();
+
     }
 
     @Override
@@ -125,25 +125,36 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         super.onPause();
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu_stu, menu);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        if(LogInActivity.loggedInUserType) {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+        } else
+        {
+            getMenuInflater().inflate(R.menu.main_menu_stu, menu);
+        }
         return true;
     }
 
-    /*@Override
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
         switch (item.getItemId()) {
-            case R.id.miInfo_stu:
+            case R.id.miInfo:
                 openPopUpWindow();
                 return true;
-            case R.id.miJoinGroup_stu:
+            case R.id.miCreateGroup:
+                Intent f = new Intent(getApplicationContext(), CreateGroupActivity.class);
+                startActivity(f);
+                finish();
+                return true;
+            case R.id.miJoinGroup:
                 Intent l = new Intent(getApplicationContext(), JoinGroupActivity.class);
                 startActivity(l);
                 finish();
                 return true;
-            case R.id.miLogout_stu:
+            case R.id.miLogout:
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUserType("loggedInUserType.txt", false, getApplicationContext());
@@ -160,7 +171,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }*/
+    }
 
     public static void buttonEffect(View button){
         button.setOnTouchListener(new View.OnTouchListener() {
@@ -172,7 +183,17 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                         v.invalidate();
                         break;
                     }
+                    case MotionEvent.ACTION_SCROLL: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
                     case MotionEvent.ACTION_UP: {
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_CANCEL: {
                         v.getBackground().clearColorFilter();
                         v.invalidate();
                         break;
@@ -181,13 +202,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                 return false;
             }
         });
-    }
-
-    public void unregister() {
-        try {
-            gcm.unregister();
-        }catch(IOException d) {
-        }
     }
 
     public void fillConvos() {
@@ -331,10 +345,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         );
     }
 
-    ImageView deleteIcon;
-    ImageView leaveGroupIcon;
-    String admin;
-    String deleteKey;
     public void highlightRow(final TableRow row)
     {
         if(highlightedRows != null) {
@@ -361,7 +371,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
-                            System.out.println("COUNT " + tableLayout.getChildCount());
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
@@ -383,7 +392,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                         //IF USER IS GROUP ADMIN THEN CAN DELETE
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
-                                //groupToDel = ((TextView) row.getChildAt(0)).getText().toString();
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
                             }
@@ -405,17 +413,18 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
     public void openConfirmLeaveGroupPopUp()
     {
-        LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
+
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = size.x;
         int height = size.y;
 
-        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
+        final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/2), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -443,13 +452,15 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                         }
                         catch(JSONException e) {
                             e.printStackTrace();
+                            hidepDialog();
                         }
                         if(user != null) {
                             c.RemoveUserFromGroup(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
                                     Toast.makeText(getApplicationContext(), "Group left.", Toast.LENGTH_LONG).show();
-                                    Intent f = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                    hidepDialog();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                                     startActivity(f);
                                     finish();
                                 }
@@ -465,6 +476,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                 @Override
                                 public void onError(VolleyError error) {
                                     Toast.makeText(getApplicationContext(), "Error, unable to leave group...", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                 }
                             }, deleteKey, user);
                         }
@@ -482,7 +494,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError error) {
-
+                        hidepDialog();
                     }
                 }, LogInActivity.loggedInUser);
 
@@ -502,17 +514,18 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
     public void openConfirmDeletePopUp()
     {
-        LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
+
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = size.x;
         int height = size.y;
 
-        final PopupWindow pwindo = new PopupWindow(layout, (width-(width/4)), (height-(height/2)), true);
+        final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/2), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
         pwindo.setBackgroundDrawable(new BitmapDrawable());
@@ -546,25 +559,25 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                             c.deleteConversation(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {
-                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
                                 public void onSuccess(JSONArray result) {
-                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
                                 public void onSuccess(String result) {
                                     Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
-                                    Intent f = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                    hidepDialog();
+                                    Intent f = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                                     startActivity(f);
                                     finish();
                                 }
 
                                 @Override
                                 public void onError(VolleyError error) {
-                                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Error deleting convseration..", Toast.LENGTH_LONG).show();
+                                    hidepDialog();
                                 }
                             }, deleteKey);
                         }
@@ -588,25 +601,25 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                             c.deleteConversation(new ServerCallback() {
                                                 @Override
                                                 public void onSuccess(JSONObject result) {
-                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON OBJECT RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
                                                 public void onSuccess(JSONArray result) {
-                                                    //Toast.makeText(getApplicationContext(), "WORKED JSON ARRAY RESPONSE", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 @Override
                                                 public void onSuccess(String result) {
                                                     Toast.makeText(getApplicationContext(), "Conversation Deleted", Toast.LENGTH_LONG).show();
-                                                    Intent f = new Intent(getApplicationContext(), ChooseConversationStudentActivity.class);
+                                                    hidepDialog();
+                                                    Intent f = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                                                     startActivity(f);
                                                     finish();
                                                 }
 
                                                 @Override
                                                 public void onError(VolleyError error) {
-                                                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(getApplicationContext(), "Error deleting conversation..", Toast.LENGTH_LONG).show();
+                                                    hidepDialog();
                                                 }
                                             }, deleteKey);
                                         }
@@ -615,6 +628,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                                     @Override
                                     public void onError(VolleyError error) {
                                         Toast.makeText(getApplicationContext(), "Failed to delete group", Toast.LENGTH_LONG).show();
+                                        hidepDialog();
                                     }
                                 }, messageIDs.get(f));
 
@@ -634,6 +648,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
                     @Override
                     public void onError(VolleyError error) {
                         Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                        hidepDialog();
                     }
                 }, deleteKey);
             }
@@ -649,8 +664,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         buttonEffect(cancelDelete);
     }
 
-    int numPressed = 0;
-    boolean wasHighlighted = false;
     @Override
     public void onBackPressed()
     {
@@ -672,7 +685,7 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             }
             highlightedRows.clear();
         }
-        else if(numPressed == 1 && !wasHighlighted)
+        else if(numPressed == 1)
         {
             finish();
         }
@@ -684,10 +697,11 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
 
     public void openPopUpWindow()
     {
-        LayoutInflater inflater = (LayoutInflater) ChooseConversationStudentActivity.this
+        LayoutInflater inflater = (LayoutInflater) ChooseConversationActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_info_popup,
                 (ViewGroup) findViewById(R.id.glayout1));
+
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -718,7 +732,6 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         buttonEffect(closePopup);
     }
 
-
     public static void saveKey(String key, Context ctx)
     {
         FileOutputStream fos;
@@ -745,25 +758,10 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         }
     }
 
-    public String retrieveStartUpNumber() {
-        String key = "";
-        try {
-            File myDir = new File(getFilesDir().getAbsolutePath());
-            BufferedReader br = new BufferedReader(new FileReader(myDir + "/StartUpNumber.txt"));
-            String s = br.readLine();
-            char[] p = s.toCharArray();
-            for (int i = 7; i < s.length(); i++) {
-                key += p[i];
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return key;
-    }
-
     private class RegisterInBackgroundTask extends AsyncTask<String,String,String> {
         private Context context;
+        private String SENDER_ID = "113571816922";
+        private String registrationId;
 
         public RegisterInBackgroundTask(Context context) {
             this.context = context;
@@ -773,43 +771,35 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
         protected String doInBackground(String... arg0) {
             String message = "";
             try {
-                //if(Integer.parseInt(retrieveStartUpNumber()) == 0 || Integer.parseInt(retrieveStartUpNumber()) < 0) {
-                    if (gcm == null) {
-                        gcm = GoogleCloudMessaging.getInstance(context);
-                    }
-                    registrationId = gcm.register(SENDER_ID);
-                    //message = "Device successfully registered with GCM, notification token=" + registrationId;
-                    Log.d(TAG, message);
-                    sendRegistrationIdToBackend(registrationId);
-                //}
+                if (gcm == null) {gcm = GoogleCloudMessaging.getInstance(context);}
+                registrationId = gcm.register(SENDER_ID);
+                Log.d(TAG, message);
+                sendRegistrationIdToBackend(registrationId);
+
             } catch (IOException ex) {
-                //message = "GCM registration error :" + ex.getMessage();
             }
             return message;
         }
 
         @Override
         protected void onPostExecute(String msg) {
-            //Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
         }
 
         private void sendRegistrationIdToBackend(String registrationId) {
 
-            //String backendBaseUrl = readStringFromSharedPreferences(SettingsActivity.SETTINGS_KEY_BACKEND_URL);
             String backendBaseUrl = "http://academicassistantservice2.azurewebsites.net";
 
             PushNotificationClient client = new PushNotificationClient(backendBaseUrl);
+
             Device device = createDevice(registrationId);
 
             client.registerDevice(device, new Callback<Device>() {
                 @Override
                 public void success(Device device, Response response) {
-                    //Toast.makeText(context, "Device successfully registered with backend, DeviceGUID=" + device.DeviceGuid, Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void failure(RetrofitError retrofitError) {
-                    //Toast.makeText(context, "Backend registration error:" + retrofitError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -822,10 +812,22 @@ public class ChooseConversationStudentActivity extends AppCompatActivity {
             device.Token = registrationId;
             device.UserName = LogInActivity.loggedInUser;
             device.DeviceGuid = null;
-            //todo set device.PlatformDescription based on Android version
             device.SubscriptionCategories = new ArrayList<>();
             device.SubscriptionCategories.add(device.UserName);
             return device;
         }
+    }
+
+    public void unregister() {
+        try {
+            gcm.unregister();
+        } catch(IOException d) {
+            d.printStackTrace();
+        }
+    }
+
+    private void hidepDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 }

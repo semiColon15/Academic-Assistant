@@ -48,10 +48,6 @@ import model.*;
 
 public class ViewMessagesActivity extends AppCompatActivity {
 
-   /* String apiKey = "AIzaSyBbsP89ibvkKUEr8F6fOFKoO3fCZXZOfD8";
-    String senderID = "113571816922";
-    String DefaultFullAccessSignatrue = "Endpoint=sb://academicassistantbus.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Dp2/BtK9foRgfapH+1dpmMwlHtA6KFvQg6ieMEixXpM=";*/
-
     private EditText messageText;
     private MessageServiceConnectivity connectivity;
     private UserServiceConnectivity u;
@@ -59,7 +55,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
     private ScrollView scrollView;
     private String keyConvo;
     private String nameConvo;
-    private String groupAdmin;
+    private String groupAdmin = "";
     private ArrayList<String> allSenders;
     private ArrayList<String> allMessages;
     private ArrayList<Integer> allMessageIDs;
@@ -91,8 +87,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
         tableLayout = (TableLayout) findViewById(R.id.table);
         tableLayout.setVerticalScrollBarEnabled(true);
 
-        keyConvo = ChooseConversationLecturerActivity.chosenConvoKey;
-        nameConvo = ChooseConversationLecturerActivity.chosenGroupName;
+        keyConvo = ChooseConversationActivity.chosenConvoKey;
+        nameConvo = ChooseConversationActivity.chosenGroupName;
 
         c = new ConversationServiceConnectivity(getApplicationContext(), pDialog);
 
@@ -105,7 +101,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -219,11 +215,11 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                                                   messageText.setText("");
 
-                                                  ChooseConversationLecturerActivity.saveKey("", getApplicationContext());
+                                                  ChooseConversationActivity.saveKey("", getApplicationContext());
 
                                                   scrollView.fullScroll(View.FOCUS_DOWN);
 
-                                                  String key_ = ChooseConversationLecturerActivity.chosenConvoKey;
+                                                  String key_ = ChooseConversationActivity.chosenConvoKey;
 
                                                   //Send Notification
                                                   connectivity.sendMessageNotification(new ServerCallback() {
@@ -268,7 +264,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                         JSONObject message = (JSONObject) response.get(i);
                         String key = message.getString("ConversationKey");
-                        String type = ChooseConversationLecturerActivity.chosenConvoKey;;
+                        String type = ChooseConversationActivity.chosenConvoKey;
 
                         if (key.equalsIgnoreCase(type)) {
                             String sender = message.getString("Sender");
@@ -287,13 +283,39 @@ public class ViewMessagesActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
 
-                setInitialViews();
-                scrollView.post(new Runnable() {
+                c.getConversation(new ServerCallback() {
                     @Override
-                    public void run() {
-                        scrollView.fullScroll(View.FOCUS_DOWN);
+                    public void onSuccess(JSONObject result) {
+                        try {
+                            groupAdmin = result.getString("Administrator");
+
+                            setInitialViews();
+                            scrollView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    scrollView.fullScroll(View.FOCUS_DOWN);
+                                }
+                            });
+
+                            hidepDialog();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
-                });
+
+                    @Override
+                    public void onSuccess(JSONArray result) {
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                    }
+
+                    @Override
+                    public void onError(VolleyError error) {
+                        hidepDialog();
+                    }
+                }, keyConvo);
             }
 
             @Override
@@ -303,7 +325,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
             @Override
             public void onError(VolleyError error) {
-
+                hidepDialog();
             }
         });
     }
@@ -327,7 +349,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                         JSONObject message = (JSONObject) response.get(i);
                         String key = message.getString("ConversationKey");
-                        String type = ChooseConversationLecturerActivity.chosenConvoKey;
+                        String type = ChooseConversationActivity.chosenConvoKey;
 
                         if (key.equalsIgnoreCase(type)) {
                             String sender = message.getString("Sender");
@@ -370,7 +392,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
     public void setInitialViews()
     {
         for (int i = 0; i < allMessages.size(); i++) {
-            if(allSenders != null){
+            if(allSenders != null) {
 
                 final TableRow senderRow = new TableRow(getApplicationContext());
                 senderRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -388,8 +410,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
 
                 final TextView messageInitial = new TextView(getApplicationContext());
                 messageInitial.setText(allMessages.get(i));
-                messageInitial.setPadding(0,0,0,10);
-                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT,1f));
+                messageInitial.setPadding(0, 0, 0, 10);
+                messageInitial.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
                 messageInitial.setTextAppearance(getApplicationContext(), R.style.messageTextStyle);
 
 
@@ -402,7 +424,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 timeStamp.setTextAppearance(getApplicationContext(), R.style.AppTheme);
                 timeStamp.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, 1f));
 
-                if(allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
+                if (allSenders.get(i).equalsIgnoreCase(LogInActivity.loggedInUser)) {
 
                     messageInitial.setBackgroundResource(R.drawable.chat_bubble_me);
                     messageInitial.setPadding(20, 20, 20, 20);
@@ -412,11 +434,14 @@ public class ViewMessagesActivity extends AppCompatActivity {
                     senderInitial.setGravity(Gravity.END);
                     senderInitial.setPadding(0, 0, 20, 0);
 
-                }
-                else {
-                    messageInitial.setBackgroundResource(R.drawable.chat_bubble_others);
+                } else {
+                    if (groupAdmin.equalsIgnoreCase(allSenders.get(i))) {
+                        messageInitial.setBackgroundResource(R.drawable.chat_bubble_admin);
+                    } else {
+                        messageInitial.setBackgroundResource(R.drawable.chat_bubble_others);
+                    }
                     messageInitial.setPadding(20, 20, 20, 20);
-                    messageRow.setPadding(20,10,80,10);
+                    messageRow.setPadding(20, 10, 80, 10);
                     timeStamp.setPadding(20, 0, 0, 0);
                     senderInitial.setPadding(20, 0, 0, 0);
                 }
@@ -433,11 +458,11 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 messageRow.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        for(int g =0; g < tableLayout.getChildCount();g++) {
-                            if(v == tableLayout.getChildAt(g)) {
+                        for (int g = 0; g < tableLayout.getChildCount(); g++) {
+                            if (v == tableLayout.getChildAt(g)) {
                                 highlightRow(messageRow);
-                                deletePos = (g-1)/3;
-                                tablePos = (deletePos*3)+2;
+                                deletePos = (g - 1) / 3;
+                                tablePos = (deletePos * 3) + 2;
                                 return true;
                             }
                         }
@@ -603,7 +628,11 @@ public class ViewMessagesActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    row.getChildAt(0).setBackgroundResource(R.drawable.chat_bubble_others);
+                    if (groupAdmin.equalsIgnoreCase(((TextView)((TableRow) tableLayout.getChildAt(tablePos)).getChildAt(0)).getText().toString())) {
+                        row.getChildAt(0).setBackgroundResource(R.drawable.chat_bubble_admin);
+                    } else {
+                        row.getChildAt(0).setBackgroundResource(R.drawable.chat_bubble_others);
+                    }
                     row.getChildAt(0).setPadding(20, 20, 20, 20);
                 }
                 deleteIcon.setClickable(false);
@@ -622,33 +651,9 @@ public class ViewMessagesActivity extends AppCompatActivity {
         }
     }
 
-    //TODO
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
-        c.getConversation(new ServerCallback() {
-            @Override
-            public void onSuccess(JSONObject result) {
-                try {
-                    groupAdmin = result.getString("Administrator");
-                    if(LogInActivity.loggedInUser.equalsIgnoreCase(groupAdmin)) {
-                        getMenuInflater().inflate(R.menu.menu_messages_admin, menu);
-                    }
-                    else {
-                        getMenuInflater().inflate(R.menu.menu_messages, menu);
-                    }
-                } catch (JSONException e) { e.printStackTrace(); }
-            }
-            @Override
-            public void onSuccess(JSONArray result) {
-            }
-            @Override
-            public void onSuccess(String result) {
-            }
-            @Override
-            public void onError(VolleyError error) {
-                hidepDialog();
-            }
-        }, keyConvo);
+        getMenuInflater().inflate(R.menu.menu_messages, menu);
         return true;
     }
 
@@ -657,9 +662,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.miInfo_msg:
                 openPopUpWindow();
-                return true;
-            case R.id.miNotification:
-                //TODO
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -837,7 +839,6 @@ public class ViewMessagesActivity extends AppCompatActivity {
         int width = size.x;
         int height = size.y;
 
-        //TODO see if this works
         final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/4), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
@@ -846,13 +847,14 @@ public class ViewMessagesActivity extends AppCompatActivity {
         final String userNameToRemove = ((TextView) ((TableRow) d.getChildAt(personDeleteIndex)).getChildAt(0)).getText().toString();
 
         TextView text2 = (TextView) layout.findViewById(R.id.question_info);
-        text2.setText("Are you sure you want to remove " + userNameToRemove + " from this conversation?");
+        text2.setText(String.format(getResources().getString(R.string.remove_user), userNameToRemove));
 
         Button confirmLeave = (Button) layout.findViewById(R.id.delete_info);
-        confirmLeave.setText("Leave Group");
+        confirmLeave.setText(R.string.leave_group);
         confirmLeave.setOnClickListener(new View.OnClickListener() {
 
             User user;
+
             public void onClick(View v) {
 
                 u.checkUserAdminLevel(new ServerCallback() {
@@ -865,11 +867,10 @@ public class ViewMessagesActivity extends AppCompatActivity {
                             ArrayList<Conversation> convos = new ArrayList<>();
 
                             user = new User(email, password, adminLevel_, convos);
-                        }
-                        catch(JSONException e) {
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        if(user != null) {
+                        if (user != null) {
                             c.RemoveUserFromGroup(new ServerCallback() {
                                 @Override
                                 public void onSuccess(JSONObject result) {

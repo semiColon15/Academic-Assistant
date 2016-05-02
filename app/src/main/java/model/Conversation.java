@@ -19,11 +19,6 @@ public class Conversation {
         this.messages = messages;
     }
 
-    public void addMessage(Message m)
-    {
-        messages.add(m);
-    }
-
     public String getKey()
     {
         return key;
@@ -42,10 +37,5 @@ public class Conversation {
     public ArrayList<User> getMembers()
     {
         return members;
-    }
-
-    public ArrayList<Message> getMessages()
-    {
-        return messages;
     }
 }

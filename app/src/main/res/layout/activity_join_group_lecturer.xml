@@ -14,7 +14,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Join Group"
+        android:text="@string/join_goup_btn"
         android:id="@+id/joinGroup1"
         android:textColor="@color/white"
         android:background="@drawable/custom_button"
@@ -47,7 +47,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Enter Enrolement Key: "
+        android:text="@string/enrole"
         android:textColor="#000000"
         android:id="@+id/enrolKeyText1"
         android:layout_below="@+id/tool4"

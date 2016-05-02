@@ -3,19 +3,7 @@ package model;
 import java.util.Map;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewManager;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.PopupWindow;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -29,10 +17,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.hooper.kenneth.academicassistant.ChooseConversationLecturerActivity;
-import com.hooper.kenneth.academicassistant.ChooseConversationStudentActivity;
 import com.hooper.kenneth.academicassistant.LogInActivity;
-import com.hooper.kenneth.academicassistant.R;
 import com.hooper.kenneth.academicassistant.ViewMessagesActivity;
 
 import org.json.JSONArray;
@@ -60,7 +45,6 @@ public class MessageServiceConnectivity {
 
     public void setInitialViews(final ServerCallback callback)
     {
-        //IF TIME FIX THIS TO RETURN MESSAGES ONLY IN A SPECIFIED GROUP IN SERVICE
         String url = "Messages/GetMessages";
         showpDialog();
         String Url = baseUrl + url;
@@ -74,13 +58,11 @@ public class MessageServiceConnectivity {
 
                         callback.onSuccess(response);
                         Log.d(TAG, response.toString());
-                        hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
                 hidepDialog();
             }
         }){
@@ -103,9 +85,7 @@ public class MessageServiceConnectivity {
 
     public void setInitialViewsNoDialog(final ServerCallback callback)
     {
-        //IF TIME FIX THIS TO RETURN MESSAGES ONLY IN A SPECIFIED GROUP IN SERVICE
         String url = "Messages/GetMessages";
-        //showpDialog();
         String Url = baseUrl + url;
 
 
@@ -117,14 +97,11 @@ public class MessageServiceConnectivity {
 
                         callback.onSuccess(response);
                         Log.d(TAG, response.toString());
-                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-               // Toast.makeText(context,error.getMessage(), Toast.LENGTH_SHORT).show();
-                //hidepDialog();
             }
         }){
             @Override
@@ -144,7 +121,7 @@ public class MessageServiceConnectivity {
         mRequestQueue.add(req);
     }
 
-    public void setViews(final ServerCallback callback)
+/*    public void setViews(final ServerCallback callback)
     {
         String url = "Messages/GetMessages";
         String Url = baseUrl + url;
@@ -180,7 +157,7 @@ public class MessageServiceConnectivity {
 
         // Adding request to request queue
         mRequestQueue.add(req);
-    }
+    }*/
 
     private void showpDialog() {
         if (!pDialog.isShowing())
@@ -210,10 +187,8 @@ public class MessageServiceConnectivity {
                         try {
                             callback.onSuccess(response);
                             VolleyLog.v("Response:%n %s", response.toString(4));
-                            //Toast.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            //Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -250,7 +225,7 @@ public class MessageServiceConnectivity {
 
                     @Override
                     public void onResponse(String response) {
-                        Log.d(TAG, response.toString());
+                        Log.d(TAG, response);
 
                         callback.onSuccess(response);
                         hidepDialog();

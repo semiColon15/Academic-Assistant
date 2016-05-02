@@ -97,7 +97,6 @@ public class ConversationServiceConnectivity {
                         Log.d(TAG, response.toString());
 
                         callback.onSuccess(response);
-                        //hidepDialog();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -179,7 +178,6 @@ public class ConversationServiceConnectivity {
                     public void onResponse(JSONObject response) {
                         try {
                                 callback.onSuccess(response);
-                            //hidepDialog();
                             VolleyLog.v("Response:%n %s", response.toString(4));
 
                         } catch (JSONException e) {
@@ -227,13 +225,10 @@ public class ConversationServiceConnectivity {
                     public void onResponse(JSONObject response) {
                         try {
                             callback.onSuccess(response);
-                            //hidepDialog();
 
                             VolleyLog.v("Response:%n %s", response.toString(4));
-                            //.makeText(context, "Success", Toast.LENGTH_LONG).show();
                         } catch (JSONException e) {
                             e.printStackTrace();
-                           // Toast.makeText(context, "ERRORRR", Toast.LENGTH_LONG).show();
                             hidepDialog();
                         }
                     }

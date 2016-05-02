@@ -63,7 +63,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -155,7 +155,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                                                     VolleyLog.v("Response:%n %s", response);
                                                     hidepDialog();
-                                                    Intent i = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                    Intent i = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                                                     startActivity(i);
                                                     finish();
 
@@ -344,7 +344,7 @@ public class SignUpActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return user;
+        return decrypt(user, 4);
 
     }
 
@@ -370,5 +370,19 @@ public class SignUpActivity extends AppCompatActivity {
     private void hidepDialog() {
         if (pDialog.isShowing())
             pDialog.dismiss();
+    }
+
+    private String decrypt(String token, int num)
+    {
+        String s = "";
+        int len = token.length();
+        for (int x = 0; x < len; x++) {
+            char c = (char) (token.charAt(x) - num);
+            if (c > 'z')
+                s += (char) (token.charAt(x) + (26 - num));
+            else
+                s += (char) (token.charAt(x) - num);
+        }
+        return s;
     }
 }

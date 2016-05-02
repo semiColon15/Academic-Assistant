@@ -8,7 +8,6 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -56,8 +55,6 @@ public class LogInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
-
-
         usernameInput = (EditText) findViewById(R.id.usernameInput);
         passwordInput = (EditText) findViewById(R.id.passwordInput);
 
@@ -74,7 +71,7 @@ public class LogInActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -91,8 +88,6 @@ public class LogInActivity extends AppCompatActivity {
 
         boolean loggedIn;
 
-        //TODO:: CHECK TO SEE IF TOKEN IS EXPIRED HERE
-
         if (token.equals("")) {
             loggedIn = false;
         }
@@ -102,7 +97,7 @@ public class LogInActivity extends AppCompatActivity {
 
         if (loggedIn)
         {
-            Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+            Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
             startActivity(t);
             finish();
         }
@@ -132,7 +127,7 @@ public class LogInActivity extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Error: CORRECT " + e.getMessage(), Toast.LENGTH_LONG).show();
                             hidepDialog();
                         }
 
@@ -188,7 +183,7 @@ public class LogInActivity extends AppCompatActivity {
                                                     saveLoggedInUserType("loggedInUserType.txt", Boolean.valueOf(adminLevel_), getApplicationContext());
                                                     loggedInUserType = Boolean.valueOf(adminLevel_);
 
-                                                    Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                                                    Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                                                     startActivity(t);
                                                     finish();
 
@@ -294,9 +289,6 @@ public class LogInActivity extends AppCompatActivity {
             BufferedReader br = new BufferedReader(new FileReader(myDir + "/token.txt"));
             String s = br.readLine();
 
-            //DECRPYT
-            //String decrypted = decrpytToken(s);
-
             char[] p = s.toCharArray();
             for(int i = 7; i < s.length(); i++)
             {
@@ -309,11 +301,6 @@ public class LogInActivity extends AppCompatActivity {
     }
 
     public static void saveToken(String filename, String token, Context ctx) {
-
-        /*String encryptedToken = encryptToken(token);
-        System.out.println("ENCRYPTED: " + encryptedToken);
-        String decryptedToken = decrpytToken(encryptedToken);
-        System.out.println("DECRYTPED: " + decryptedToken);*/
 
         FileOutputStream fos;
         try {
@@ -342,21 +329,21 @@ public class LogInActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return pword;
+        return decrypt(pword, 3);
     }
 
     public static void savePassword(String filename, String pword, Context ctx) {
         FileOutputStream fos;
+        String p = encrypt(pword, 3);
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(pword);
+            oos.writeObject(p);
             oos.close();
         }catch(IOException e){
             e.printStackTrace();
         }
     }
-
 
     public String retrieveLoggedInUser()
     {
@@ -370,22 +357,21 @@ public class LogInActivity extends AppCompatActivity {
             {
                 user += p[i];
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return user;
+        return decrypt(user,4);
 
     }
 
     public static void saveLoggedInUser(String filename, String user, Context ctx)
     {
+        String f = encrypt(user, 4);
         FileOutputStream fos;
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(user);
+            oos.writeObject(f);
             oos.close();
         }catch(IOException e){
             e.printStackTrace();
@@ -425,20 +411,31 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
-    /*private static String encryptToken(String token)
-    {
-
+    private static String encrypt(String token, int num) {
+        String s = "";
+        int len = token.length();
+        for (int x = 0; x < len; x++) {
+            char c = (char) (token.charAt(x) + num);
+            if (c > 'z')
+                s += (char) (token.charAt(x) - (26 - num));
+            else
+                s += (char) (token.charAt(x) + num);
+        }
+        return s;
     }
 
-    private static String decrpytToken(String token)
+    private String decrypt(String token, int num)
     {
-
-    }*/
-
-
-    private void showpDialog() {
-        if (!pDialog.isShowing())
-            pDialog.show();
+        String s = "";
+        int len = token.length();
+        for (int x = 0; x < len; x++) {
+            char c = (char) (token.charAt(x) - num);
+            if (c > 'z')
+                s += (char) (token.charAt(x) + (26 - num));
+            else
+                s += (char) (token.charAt(x) - num);
+        }
+        return s;
     }
 
     private void hidepDialog() {

@@ -1,28 +1,20 @@
 package gcm;
 
-import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.hooper.kenneth.academicassistant.ChooseConversationLecturerActivity;
-import com.hooper.kenneth.academicassistant.ChooseConversationStudentActivity;
 import com.hooper.kenneth.academicassistant.LogInActivity;
 import com.hooper.kenneth.academicassistant.R;
-
-import java.util.List;
 
 public class GcmIntentService extends IntentService {
     public static final String TAG = "GCM";
@@ -63,7 +55,7 @@ public class GcmIntentService extends IntentService {
                             .setAutoCancel(true)
                             .setContentTitle(message)
                             .setSubText(senderName)
-                            .setSmallIcon(R.drawable.chatify)
+                            .setSmallIcon(R.mipmap.ic_launcher)
                             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                             .setContentIntent(pendingIntent);
 

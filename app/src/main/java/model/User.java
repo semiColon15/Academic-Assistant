@@ -11,13 +11,6 @@ public class User {
     boolean adminUser;
     private List<Conversation> conversations;
 
-    public User(String email, String password, String confirmPassword)
-    {
-        this.emailAddress = email;
-        this.password = password;
-        this.confirmPassword = confirmPassword;
-    }
-
     public User(String email, String password, String confirmPassword, boolean adminUser)
     {
         this.emailAddress = email;
@@ -47,6 +40,4 @@ public class User {
     }
 
     public boolean getAdminUser() { return adminUser; }
-
-    public List<Conversation> getConversations() { return conversations; }
 }

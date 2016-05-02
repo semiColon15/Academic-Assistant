@@ -7,8 +7,6 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewManager;
@@ -54,7 +52,7 @@ public class CreateGroupActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.chatify);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -164,7 +162,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                     }
 
                 } else if (createGroup.getText().toString().equalsIgnoreCase("OK")) {
-                    Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+                    Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
                     startActivity(t);
                     finish();
 
@@ -178,7 +176,7 @@ public class CreateGroupActivity extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        Intent t = new Intent(getApplicationContext(), ChooseConversationLecturerActivity.class);
+        Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
         startActivity(t);
         finish();
     }

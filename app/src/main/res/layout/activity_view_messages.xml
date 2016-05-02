@@ -40,11 +40,12 @@
 
         <EditText
             android:id="@+id/messageText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
             android:fadeScrollbars="false"
             android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_weight="1"
             android:inputType="textCapSentences|textMultiLine"
             android:maxLines="4"

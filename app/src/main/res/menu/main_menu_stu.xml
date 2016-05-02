@@ -4,13 +4,13 @@
     <item android:id="@+id/miJoinGroup"
         android:icon="@drawable/adduser"
         app:showAsAction="ifRoom"
-        android:title="Join Group" />
+        android:title="@string/join_goup_btn" />
 
     <item
         android:id="@+id/miOptions"
         android:icon="@drawable/ic_more_vert_black_24dp"
         app:showAsAction="ifRoom"
-        android:title="Options">
+        android:title="@string/options">
 
         <menu>
 
@@ -18,14 +18,14 @@
                 android:id="@+id/miInfo"
                 android:icon="@drawable/ic_info_black_24dp"
                 app:showAsAction="ifRoom"
-                android:title="Info">
+                android:title="@string/info">
             </item>
 
             <item
                 android:id="@+id/miLogout"
                 android:icon="@drawable/logout"
                 app:showAsAction="ifRoom"
-                android:title="Log Out">
+                android:title="@string/logout">
             </item>
 
         </menu>

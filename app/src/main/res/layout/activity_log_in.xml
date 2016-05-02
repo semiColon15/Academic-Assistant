@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
 
     <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/background">
 
         <include
             layout="@layout/toolbar"
@@ -18,7 +15,7 @@
         <TextView
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="Enter Email Address:"
+            android:text="@string/email"
             android:id="@+id/usernameTextView"
             android:textColor="#000000"
             android:gravity="center"
@@ -37,7 +34,7 @@
         <TextView
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="Enter Password:"
+            android:text="@string/password"
             android:id="@+id/passwordTextView"
             android:textColor="#000000"
             android:gravity="center"
@@ -57,7 +54,7 @@
         <Button
             android:layout_width="130dp"
             android:layout_height="wrap_content"
-            android:text="Log In"
+            android:text="@string/log_in"
             android:id="@+id/LogInButton"
             android:layout_below="@+id/passwordInput"
             android:layout_alignParentLeft="true"
@@ -71,14 +68,14 @@
         <Button
             android:layout_width="130dp"
             android:layout_height="wrap_content"
-            android:text="Sign Up"
+            android:text="@string/sign_up"
             android:id="@+id/signUpButton"
             android:layout_alignTop="@+id/LogInButton"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginRight="53dp"
+            android:layout_marginEnd="53dp"
             android:textColor="@color/white"
             android:background="@drawable/custom_button"/>
 
-    </RelativeLayout>
-</LinearLayout>
+</RelativeLayout>
