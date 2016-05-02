@@ -231,11 +231,9 @@ public class LogInActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(VolleyError error) {
-                        Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
                         hidepDialog();
                     }
                 });
-                //hidepDialog();
             }
         });
 
