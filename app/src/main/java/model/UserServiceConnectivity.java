@@ -94,7 +94,7 @@ public class UserServiceConnectivity {
                 }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                     hidepDialog();
                 }
             }){
@@ -130,7 +130,7 @@ public class UserServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error is here: ", error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         })
@@ -176,7 +176,7 @@ public class UserServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -215,7 +215,7 @@ public class UserServiceConnectivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                         System.out.println(error.toString());
                         hidepDialog();
 

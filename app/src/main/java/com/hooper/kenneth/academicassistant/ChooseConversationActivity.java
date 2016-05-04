@@ -101,7 +101,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
+        getSupportActionBar().setLogo(R.drawable.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -161,7 +161,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
 
-                unregister();
+                //unregister();
 
                 saveStartUpNumber("0", getApplicationContext());
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
@@ -777,12 +777,14 @@ public class ChooseConversationActivity extends AppCompatActivity {
                 sendRegistrationIdToBackend(registrationId);
 
             } catch (IOException ex) {
+                ex.printStackTrace();
             }
             return message;
         }
 
         @Override
         protected void onPostExecute(String msg) {
+            Toast.makeText(getApplicationContext(), "POST " + msg, Toast.LENGTH_LONG).show();
         }
 
         private void sendRegistrationIdToBackend(String registrationId) {
@@ -800,6 +802,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
 
                 @Override
                 public void failure(RetrofitError retrofitError) {
+                    Log.d("", ""+retrofitError);
                 }
             });
 

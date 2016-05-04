@@ -71,7 +71,7 @@ public class LogInActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
+        getSupportActionBar().setLogo(R.drawable.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -94,7 +94,6 @@ public class LogInActivity extends AppCompatActivity {
         else {
             loggedIn = true;
         }
-
         if (loggedIn)
         {
             Intent t = new Intent(getApplicationContext(), ChooseConversationActivity.class);
@@ -127,7 +126,6 @@ public class LogInActivity extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Error: CORRECT " + e.getMessage(), Toast.LENGTH_LONG).show();
                             hidepDialog();
                         }
 
@@ -168,8 +166,8 @@ public class LogInActivity extends AppCompatActivity {
                                             hidepDialog();
                                         }
 
-                                        password = passwordInput.getText().toString();
-                                        loggedInUser = usernameInput.getText().toString();
+                                        password = passwordInput.getText().toString().trim();
+                                        loggedInUser = usernameInput.getText().toString().trim();
 
                                         userServiceConnectivity.checkUserAdminLevel(new ServerCallback() {
                                             @Override
@@ -327,16 +325,17 @@ public class LogInActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return decrypt(pword, 3);
+        //return decrypt(pword, 3);
+        return pword;
     }
 
     public static void savePassword(String filename, String pword, Context ctx) {
         FileOutputStream fos;
-        String p = encrypt(pword, 3);
+        //String p = encrypt(pword, 3);
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(p);
+            oos.writeObject(pword);
             oos.close();
         }catch(IOException e){
             e.printStackTrace();
@@ -358,18 +357,19 @@ public class LogInActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return decrypt(user,4);
+//        return decrypt(user,4);
+        return user;
 
     }
 
     public static void saveLoggedInUser(String filename, String user, Context ctx)
     {
-        String f = encrypt(user, 4);
+        //String f = encrypt(user, 4);
         FileOutputStream fos;
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(f);
+            oos.writeObject(user);
             oos.close();
         }catch(IOException e){
             e.printStackTrace();
@@ -409,7 +409,7 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
-    private static String encrypt(String token, int num) {
+   /* private static String encrypt(String token, int num) {
         String s = "";
         int len = token.length();
         for (int x = 0; x < len; x++) {
@@ -434,7 +434,7 @@ public class LogInActivity extends AppCompatActivity {
                 s += (char) (token.charAt(x) - num);
         }
         return s;
-    }
+    }*/
 
     private void hidepDialog() {
         if (pDialog.isShowing())

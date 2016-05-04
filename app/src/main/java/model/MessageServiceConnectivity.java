@@ -63,7 +63,7 @@ public class MessageServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -102,7 +102,7 @@ public class MessageServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -158,7 +158,7 @@ public class MessageServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+             //   Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -197,7 +197,7 @@ public class MessageServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -239,7 +239,7 @@ public class MessageServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
             }
         }){
             @Override

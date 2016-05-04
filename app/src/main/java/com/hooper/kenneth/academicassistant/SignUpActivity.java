@@ -63,7 +63,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         // Display icon in the toolbar
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.ic_launcher);
+        getSupportActionBar().setLogo(R.drawable.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
@@ -144,14 +144,11 @@ public class SignUpActivity extends AppCompatActivity {
                                                     JSONObject jsonResponse = new JSONObject(response);
                                                     LogInActivity.token = jsonResponse.getString("access_token");
 
-                                                    System.out.println("EMAIL 1 === " + user.getEmail());
                                                     LogInActivity.saveToken("token.txt", LogInActivity.token, getApplicationContext());
                                                     LogInActivity.saveLoggedInUser("loggedInUser.txt", user.getEmail(), getApplicationContext());
                                                     LogInActivity.saveLoggedInUserType("loggedInUserType.txt", isAdminLevel, getApplicationContext());
                                                     LogInActivity.loggedInUser = retrieveLoggedInUser();
                                                     LogInActivity.loggedInUserType = retrieveLoggedInUserType();
-                                                    System.out.println("LOGGED IN ===== " + LogInActivity.loggedInUser);
-                                                    System.out.println("SAVED USER  ===== " + retrieveLoggedInUser());
 
                                                     VolleyLog.v("Response:%n %s", response);
                                                     hidepDialog();
@@ -344,7 +341,8 @@ public class SignUpActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return decrypt(user, 4);
+        //return decrypt(user, 4);
+        return user;
 
     }
 
@@ -372,7 +370,7 @@ public class SignUpActivity extends AppCompatActivity {
             pDialog.dismiss();
     }
 
-    private String decrypt(String token, int num)
+    /*private String decrypt(String token, int num)
     {
         String s = "";
         int len = token.length();
@@ -384,5 +382,5 @@ public class SignUpActivity extends AppCompatActivity {
                 s += (char) (token.charAt(x) - num);
         }
         return s;
-    }
+    }*/
 }
