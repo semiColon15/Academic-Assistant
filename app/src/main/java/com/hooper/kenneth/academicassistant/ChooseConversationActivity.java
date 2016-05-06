@@ -784,7 +784,6 @@ public class ChooseConversationActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String msg) {
-            Toast.makeText(getApplicationContext(), "POST " + msg, Toast.LENGTH_LONG).show();
         }
 
         private void sendRegistrationIdToBackend(String registrationId) {
