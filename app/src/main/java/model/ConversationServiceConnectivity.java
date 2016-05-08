@@ -28,6 +28,10 @@ import java.util.Map;
 
 public class ConversationServiceConnectivity {
 
+    //This class handles any requests being made to the Conversations controller in the Azure service
+    //It consists of various volley methods which relates to actions on the Conversations controller
+    //All volley request take a Servercallback object as their first parameter so that the onSuccess/onError methods can be called in other classes
+
     private Context context;
     private RequestQueue mRequestQueue;
     private ProgressDialog pDialog;
@@ -48,6 +52,7 @@ public class ConversationServiceConnectivity {
         String Url = baseUrl + url;
         showpDialog();
 
+        //JsonArrayRequest to handle a list of JsonObjects
         JsonArrayRequest req = new JsonArrayRequest(Url,
                 new Response.Listener<JSONArray>() {
 
@@ -61,10 +66,10 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
+            //Send access token with request
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String>  headers = new HashMap<>();
@@ -74,6 +79,7 @@ public class ConversationServiceConnectivity {
             }
         };
 
+        //set retry if request times out
         req.setRetryPolicy(new DefaultRetryPolicy(
                 10000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
@@ -101,7 +107,6 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -141,7 +146,6 @@ public class ConversationServiceConnectivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
                 hidepDialog();
             }
@@ -190,7 +194,6 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -237,7 +240,6 @@ public class ConversationServiceConnectivity {
             public void onErrorResponse(VolleyError error) {
                 callback.onError(error);
                 VolleyLog.e("Error: ", error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -277,7 +279,6 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -316,7 +317,6 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -360,7 +360,6 @@ public class ConversationServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){

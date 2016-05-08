@@ -28,6 +28,8 @@ import model.ServerCallback;
 
 public class CreateGroupActivity extends AppCompatActivity {
 
+    //Activity to allow admin users to create a new group which students/lecturers can join
+
     private Button createGroup;
     private ConversationServiceConnectivity convo;
     private ProgressDialog pDialog;
@@ -173,6 +175,7 @@ public class CreateGroupActivity extends AppCompatActivity {
 
     }
 
+    //return to previous screen
     @Override
     public void onBackPressed()
     {

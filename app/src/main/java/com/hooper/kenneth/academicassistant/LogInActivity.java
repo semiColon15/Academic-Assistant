@@ -35,6 +35,10 @@ import model.UserServiceConnectivity;
 
 public class LogInActivity extends AppCompatActivity {
 
+    //Initial screen for the app
+    //If user is already logged in then app will autoatically open up the ChooseConversation Activity
+    //If user is not logged in, then log in details will be needed or be redirected to sign up screen
+
     private EditText usernameInput;
     private EditText passwordInput;
 
@@ -277,6 +281,7 @@ public class LogInActivity extends AppCompatActivity {
         });
     }
 
+    //get saved access token for service
     public String retrieveToken()
     {
         String token = "";
@@ -296,6 +301,7 @@ public class LogInActivity extends AppCompatActivity {
         return token;
     }
 
+    //save access token for service
     public static void saveToken(String filename, String token, Context ctx) {
 
         FileOutputStream fos;
@@ -309,6 +315,7 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
+    //get password saved to device
     public String retrievePassword()
     {
         String pword = "";
@@ -325,17 +332,16 @@ public class LogInActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //return decrypt(pword, 3);
-        return pword;
+        return decrypt(pword, 3);
     }
 
     public static void savePassword(String filename, String pword, Context ctx) {
         FileOutputStream fos;
-        //String p = encrypt(pword, 3);
+        String p = encrypt(pword, 3);
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(pword);
+            oos.writeObject(p);
             oos.close();
         }catch(IOException e){
             e.printStackTrace();
@@ -357,19 +363,18 @@ public class LogInActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        return decrypt(user,4);
-        return user;
+        return decrypt(user,4);
 
     }
 
     public static void saveLoggedInUser(String filename, String user, Context ctx)
     {
-        //String f = encrypt(user, 4);
+        String f = encrypt(user, 4);
         FileOutputStream fos;
         try {
             fos = ctx.openFileOutput(filename, Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(user);
+            oos.writeObject(f);
             oos.close();
         }catch(IOException e){
             e.printStackTrace();
@@ -409,7 +414,8 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
-   /* private static String encrypt(String token, int num) {
+    //Caesar cypher to encryt data stored on device
+    private static String encrypt(String token, int num) {
         String s = "";
         int len = token.length();
         for (int x = 0; x < len; x++) {
@@ -434,7 +440,7 @@ public class LogInActivity extends AppCompatActivity {
                 s += (char) (token.charAt(x) - num);
         }
         return s;
-    }*/
+    }
 
     private void hidepDialog() {
         if (pDialog.isShowing())

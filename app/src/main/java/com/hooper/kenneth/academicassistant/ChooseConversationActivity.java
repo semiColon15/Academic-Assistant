@@ -69,12 +69,9 @@ public class ChooseConversationActivity extends AppCompatActivity {
     private String admin;
     private String deleteKey;
     ProgressDialog pDialog;
-
-    //NOTIFICATIONS
     private static final String TAG = "LecturerConvo";
+
     private GoogleCloudMessaging gcm;
-    private Context context;
-    //
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,11 +84,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         chosenConvoKey = "";
         chosenGroupName = "";
 
-        //NOTIFICATIONS
-        context = getApplicationContext();
         gcm = GoogleCloudMessaging.getInstance(this);
-        //
-
 
         tableLayout = (TableLayout) findViewById(R.id.convos);
         tableLayout.setVerticalScrollBarEnabled(true);
@@ -99,7 +92,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Display icon in the toolbar
+        // Toolbar congifuration
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setLogo(R.drawable.ic_launcher);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
@@ -117,7 +110,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        new RegisterInBackgroundTask(context).execute();
+        new RegisterInBackgroundTask(getApplicationContext()).execute();
     }
 
     @Override
@@ -155,15 +148,14 @@ public class ChooseConversationActivity extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.miLogout:
+                //when log out set saved data to be null
                 LogInActivity.saveToken("token.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUser("loggedInUser.txt", "", getApplicationContext());
                 LogInActivity.saveLoggedInUserType("loggedInUserType.txt", false, getApplicationContext());
                 LogInActivity.savePassword("password.txt", "", getApplicationContext());
                 saveKey("", getApplicationContext());
-
-                //unregister();
-
                 saveStartUpNumber("0", getApplicationContext());
+
                 Intent e = new Intent(getApplicationContext(), LogInActivity.class);
                 startActivity(e);
                 finish();
@@ -173,6 +165,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         }
     }
 
+    //Actions when button is pressed etc
     public static void buttonEffect(View button){
         button.setOnTouchListener(new View.OnTouchListener() {
 
@@ -204,6 +197,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         });
     }
 
+    //display any existing conversations
     public void fillConvos() {
         c.getConversationsForUser(new ServerCallback() {
                                       @Override
@@ -312,6 +306,8 @@ public class ChooseConversationActivity extends AppCompatActivity {
                                                   tableRow.setOnClickListener(new View.OnClickListener() {
                                                       public void onClick(View v) {
 
+                                                          //when a row is selected, store the key to that conversation to load the information and messages on next activity
+
                                                           saveKey(convos.get(f).getKey(), getApplicationContext());
                                                           chosenConvoKey = convos.get(f).getKey();
                                                           chosenGroupName = convos.get(f).getConversationName();
@@ -345,6 +341,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         );
     }
 
+    //Change background and add delete and leave icons to a row when highlighted
     public void highlightRow(final TableRow row)
     {
         if(highlightedRows != null) {
@@ -371,6 +368,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                            //get text on text view which is on the table row
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
@@ -391,6 +389,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         //IF USER IS GROUP ADMIN THEN CAN DELETE
                         for (int i = 0; i < tableLayout.getChildCount(); i++) {
+                            //get text on text view which is on the table row
                             if (((TextView) ((TableRow) tableLayout.getChildAt(i)).getChildAt(0)).getText().toString().equalsIgnoreCase(((TextView) highlightedRows.get(0).getChildAt(0)).getText().toString())) {
                                 admin = conversations.get(i).getAdministrator();
                                 deleteKey = conversations.get(i).getKey();
@@ -413,17 +412,21 @@ public class ChooseConversationActivity extends AppCompatActivity {
 
     public void openConfirmLeaveGroupPopUp()
     {
+        //Open pop up window
+
         LayoutInflater inflater = (LayoutInflater) ChooseConversationActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.activity_conversation_delete_popup,
                 (ViewGroup) findViewById(R.id.glayout2));
 
+        //get the size of screen on device
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = size.x;
         int height = size.y;
 
+        //make view one quater squared the size of the screen
         final PopupWindow pwindo = new PopupWindow(layout, width-(width/4), height-(height/2), true);
 
         pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
@@ -585,6 +588,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
                         {
                             for (int i = 0; i < messageIDs.size(); i++) {
                                 final int f = i;
+                                //delete all messages in conversation before deleting the conversation
                                 c.deleteMessagesInConvo(new ServerCallback() {
                                     @Override
                                     public void onSuccess(JSONObject result) {
@@ -664,11 +668,13 @@ public class ChooseConversationActivity extends AppCompatActivity {
         buttonEffect(cancelDelete);
     }
 
+    //to un-highlight a row
     @Override
     public void onBackPressed()
     {
         numPressed++;
         if(numPressed == 1 && wasHighlighted) {
+            //set row bacl to non highlighted state
             for (int i = 0; i < tableLayout.getChildCount(); i++) {
                 View view = tableLayout.getChildAt(i);
                 if (view instanceof TableRow) {
@@ -695,6 +701,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         }
     }
 
+    //Get information about the conversation
     public void openPopUpWindow()
     {
         LayoutInflater inflater = (LayoutInflater) ChooseConversationActivity.this
@@ -732,6 +739,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         buttonEffect(closePopup);
     }
 
+    //save the key to file so it can be accessed in the future
     public static void saveKey(String key, Context ctx)
     {
         FileOutputStream fos;
@@ -758,6 +766,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         }
     }
 
+    //register device with GCM
     private class RegisterInBackgroundTask extends AsyncTask<String,String,String> {
         private Context context;
         private String SENDER_ID = "113571816922";
@@ -828,6 +837,7 @@ public class ChooseConversationActivity extends AppCompatActivity {
         }
     }
 
+    //turn progress dialog off
     private void hidepDialog() {
         if (pDialog.isShowing())
             pDialog.dismiss();

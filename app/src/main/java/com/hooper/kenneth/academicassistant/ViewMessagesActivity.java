@@ -48,6 +48,8 @@ import model.*;
 
 public class ViewMessagesActivity extends AppCompatActivity {
 
+    //Activity which allows user to send, receive and view messages in a conversation
+
     private EditText messageText;
     private MessageServiceConnectivity connectivity;
     private UserServiceConnectivity u;
@@ -68,6 +70,9 @@ public class ViewMessagesActivity extends AppCompatActivity {
     private int tablePos;
     private int personDeleteIndex;
     private ProgressDialog pDialog;
+
+    private int numPressed = 0;
+    private boolean wasHighlighted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +118,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         connectivity = new MessageServiceConnectivity(getApplicationContext(), pDialog);
         getViewInfo();
 
-
+        //send message
         sendButton.setOnClickListener(new View.OnClickListener() {
                                           public void onClick(View v) {
 
@@ -245,6 +250,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         );
     }
 
+    //get information from service to be set on views on screen
     public void getViewInfo()
     {
         connectivity.setInitialViews(new ServerCallback() {
@@ -330,6 +336,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
         });
     }
 
+
+    //refresh views - will be called when reveive GCM notification
     public void setViewsRefresh()
     {
         connectivity.setInitialViewsNoDialog(new ServerCallback() {
@@ -389,6 +397,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         });
     }
 
+    //set views after with information from getViewInfo()
     public void setInitialViews()
     {
         for (int i = 0; i < allMessages.size(); i++) {
@@ -474,7 +483,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
     }
 
 
-
+    //highlight a row when onlongclicklistenr is pressed
     public void highlightRow(final TableRow row)
     {
         if(highlightedRows != null) {
@@ -545,6 +554,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         }
     }
 
+    //Pop up to confirm/cancel deleting a message
     public void openPopUpDeleteWindow()
     {
         LayoutInflater inflater = (LayoutInflater) ViewMessagesActivity.this
@@ -610,9 +620,8 @@ public class ViewMessagesActivity extends AppCompatActivity {
         buttonEffect(cancelDelete);
     }
 
-    int numPressed = 0;
-    boolean wasHighlighted = false;
 
+    //set hihglighted rows back to normal
     @Override
     public void onBackPressed()
     {
@@ -689,6 +698,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         });
     }
 
+    //Pop up window to get information about conersation
     public void openPopUpWindow() {
         LayoutInflater inflater = (LayoutInflater) ViewMessagesActivity.this
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -816,7 +826,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
     }
 
 
-    //This is the handler that will manager to process the broadcast intent
+    //This is the handler that will manage the broadcast intent
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -826,6 +836,7 @@ public class ViewMessagesActivity extends AppCompatActivity {
         }
     };
 
+    //Pop up to confirm/cancel removing person from a conversation
     public void openConfirmLeaveGroupPopUp(TableLayout d, final PopupWindow pw)
     {
         LayoutInflater inflater = (LayoutInflater) ViewMessagesActivity.this

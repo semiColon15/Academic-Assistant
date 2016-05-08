@@ -25,6 +25,10 @@ import java.util.Map;
 
 public class UserServiceConnectivity {
 
+    //This class handles any requests being made to the Users controller in the Azure service
+    //It consists of various volley methods which relates to actions on the Users controller
+    //All volley request take a Servercallback object as their first parameter so that the onSuccess/onError methods can be called in other classes
+
     private Context context;
     private RequestQueue mRequestQueue;
     private ProgressDialog pDialog;
@@ -94,7 +98,6 @@ public class UserServiceConnectivity {
                 }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                     hidepDialog();
                 }
             }){
@@ -130,11 +133,11 @@ public class UserServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error is here: ", error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         })
         {
+            //to encode the request as x-www-form-urlencoded
             @Override
             public String getBodyContentType() {
                 return "application/x-www-form-urlencoded; charset=UTF-8";
@@ -176,7 +179,6 @@ public class UserServiceConnectivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                 hidepDialog();
             }
         }){
@@ -215,7 +217,6 @@ public class UserServiceConnectivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        //Toast.makeText(context, "No Internet Connection", Toast.LENGTH_LONG).show();
                         System.out.println(error.toString());
                         hidepDialog();
 

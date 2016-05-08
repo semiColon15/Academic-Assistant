@@ -36,6 +36,8 @@ import model.UserServiceConnectivity;
 
 public class SignUpActivity extends AppCompatActivity {
 
+    //Activity to allow a user to create an account
+
     private EditText emailAddress;
     private EditText password;
     private EditText confirmPassword;
@@ -118,6 +120,8 @@ public class SignUpActivity extends AppCompatActivity {
 
                     final ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                     final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+
+                    //if connected to internet
                     if (activeNetwork != null && activeNetwork.isConnected()) {
 
                         userServiceConnectivity.registerUserWithService(new ServerCallback() {
@@ -211,7 +215,7 @@ public class SignUpActivity extends AppCompatActivity {
 
 
                     } else {
-                        // notify user you are not online
+                        //user is not online
                         hidepDialog();
                     }
                 }
@@ -341,8 +345,7 @@ public class SignUpActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //return decrypt(user, 4);
-        return user;
+        return decrypt(user, 4);
 
     }
 
@@ -370,7 +373,8 @@ public class SignUpActivity extends AppCompatActivity {
             pDialog.dismiss();
     }
 
-    /*private String decrypt(String token, int num)
+    //decrpyt data from file
+    private String decrypt(String token, int num)
     {
         String s = "";
         int len = token.length();
@@ -382,5 +386,5 @@ public class SignUpActivity extends AppCompatActivity {
                 s += (char) (token.charAt(x) - num);
         }
         return s;
-    }*/
+    }
 }

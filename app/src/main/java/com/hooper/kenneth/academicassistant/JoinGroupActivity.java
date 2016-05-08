@@ -24,6 +24,8 @@ import model.ServerCallback;
 
 public class JoinGroupActivity extends AppCompatActivity {
 
+    //Activity to join a user into an existing group
+
     private ConversationServiceConnectivity convo;
 
     protected void onCreate(Bundle savedInstanceState) {
